@@ -1,9 +1,9 @@
 {
-  "name": "cloud-inventory",
-  "version": "0.0.8",
-  "description": "Cloud Infrastructure Inventory",
+  "name": "aws-inventory",
+  "version": "0.0.3",
+  "description": "AWS Infrastructure Inventory",
   "main": "index.js",
-  "repository": "ekeyser/cloud-inventory",
+  "repository": "ekeyser/aws-inventory",
   "files": [
     "index.js"
   ],
@@ -21,9 +21,9 @@
   "author": "emkeyser",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ekeyser/cloud-inventory/issues"
+    "url": "https://github.com/ekeyser/aws-inventory/issues"
   },
-  "homepage": "https://github.com/ekeyser/cloud-inventory",
+  "homepage": "https://github.com/ekeyser/aws-inventory",
   "dependencies": {
     "@aws-sdk/client-acm": "^3.18.0",
     "@aws-sdk/client-api-gateway": "^3.18.0",

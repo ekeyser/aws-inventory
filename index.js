@@ -109,19 +109,19 @@ const {
     DescribeSecurityGroupsCommand
 } = require('@aws-sdk/client-ec2');
 
-class CloudInventory {
+class AwsInventory {
 
     // MAX_WAIT = 5000;
     // objGlobal = {};
     // credentials;
-    // awsRegions;
-    // awsServices;
+    // regions;
+    // services;
 
 
     constructor(config) {
-        this.credentials = config.aws.credentials;
-        this.awsRegions = config.aws.regions;
-        this.awsServices = config.aws.services;
+        this.credentials = config.credentials;
+        this.regions = config.regions;
+        this.services = config.services;
     }
 
 
@@ -1428,9 +1428,9 @@ class CloudInventory {
             /*
             Calculate temporal spread
              */
-            this.MAX_WAIT = Math.floor((this.awsRegions.length + this.awsServices.length) / 2) * 1000;
-            this.awsRegions.forEach((region) => {
-                arrRequests.push(this.run(region, this.awsServices, this.credentials));
+            this.MAX_WAIT = Math.floor((this.regions.length + this.services.length) / 2) * 1000;
+            this.regions.forEach((region) => {
+                arrRequests.push(this.run(region, this.services, this.credentials));
             });
 
             Promise.all(arrRequests)
@@ -1441,4 +1441,4 @@ class CloudInventory {
     }
 }
 
-module.exports = exports = CloudInventory.CloudInventory = CloudInventory;
+module.exports = exports = AwsInventory.AwsInventory = AwsInventory;
