@@ -6,6 +6,11 @@
 
 
 const {
+    STSClient,
+    GetCallerIdentityCommand,
+} = require('@aws-sdk/client-sts');
+
+const {
     ACMClient,
     ListCertificatesCommand,
     DescribeCertificateCommand,
@@ -32,6 +37,7 @@ const {
     IAMClient,
     ListPoliciesCommand,
     ListRolesCommand,
+    ListUsersCommand,
 } = require('@aws-sdk/client-iam');
 
 const {
@@ -110,14 +116,6 @@ const {
     DescribeAvailabilityZonesCommand
 } = require('@aws-sdk/client-ec2');
 
-const {mockclient} = require('aws-sdk-client-mock');
-const ec2Mock = mockclient(EC2Client);
-
-aaaasdfasdf
-ec2Mock.on(DescribeInstancesCommand)
-    .resolves({MessageId: Math.round(Math.random() * 1000000)});
-console.log('  Mk.100');
-
 class AwsInventory {
 
     // MAX_WAIT = 5000;
@@ -134,8 +132,47 @@ class AwsInventory {
     }
 
 
+    obtainAccountNumber() {
+        return new Promise((resolve, reject) => {
+
+            let credentials = this.credentials;
+            let region = 'us-east-1';
+            const stsclient = new STSClient(
+                {
+                    region,
+                    credentials,
+                }
+            );
+
+
+            let rStsGCI = () => {
+                return new Promise((resolve, reject) => {
+
+                    stsclient.send(new GetCallerIdentityCommand({}))
+                        .then((data) => {
+                            this.objGlobal[`account`] = data.Account;
+                            resolve(`rEc2DSG`);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+            rStsGCI()
+                .then((p) => {
+                    resolve(p);
+                });
+        });
+    }
+
+
     run(region, services, credentials) {
         return new Promise((resolve) => {
+            if (this.objGlobal[region] === undefined) {
+                this.objGlobal[region] = {};
+            }
+
             const agwclient = new APIGatewayClient(
                 {
                     region,
@@ -258,11 +295,6 @@ class AwsInventory {
                     cfclient.send(new ListCachePoliciesCommand({}))
                         .then((data) => {
                             data.CachePolicyList.Items.forEach((cachePolicy) => {
-
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].CachePolicies === undefined) {
                                     this.objGlobal[region].CachePolicies = [];
                                 }
@@ -284,10 +316,6 @@ class AwsInventory {
                         cfclient.send(new ListDistributionsCommand({}))
                             .then((data) => {
                                 data.DistributionList.Items.forEach((distribution) => {
-                                    if (this.objGlobal[region] === undefined) {
-                                        this.objGlobal[region] = {};
-                                    }
-
                                     if (this.objGlobal[region].Distributions === undefined) {
                                         this.objGlobal[region].Distributions = [];
                                     }
@@ -304,16 +332,33 @@ class AwsInventory {
             };
 
 
+            let rIamLU = () => {
+                return new Promise((resolve, reject) => {
+
+                    iamclient.send(new ListUsersCommand({}))
+                        .then((data) => {
+                            data.Users.forEach((user) => {
+                                if (this.objGlobal[region].Users === undefined) {
+                                    this.objGlobal[region].Users = [];
+                                }
+
+                                this.objGlobal[region].Users.push(user);
+                            });
+                            resolve(`rIamLU`);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+
             let rIamLP = () => {
                 return new Promise((resolve, reject) => {
 
                     iamclient.send(new ListPoliciesCommand({}))
                         .then((data) => {
                             data.Policies.forEach((policy) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Policies === undefined) {
                                     this.objGlobal[region].Policies = [];
                                 }
@@ -335,10 +380,6 @@ class AwsInventory {
                     iamclient.send(new ListRolesCommand({}))
                         .then((data) => {
                             data.Roles.forEach((role) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Roles === undefined) {
                                     this.objGlobal[region].Roles = [];
                                 }
@@ -360,10 +401,6 @@ class AwsInventory {
                     r53client.send(new ListHostedZonesCommand({}))
                         .then((data) => {
                             data.HostedZones.forEach((hostedZone) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].HostedZones === undefined) {
                                     this.objGlobal[region].HostedZones = [];
                                 }
@@ -388,10 +425,6 @@ class AwsInventory {
                     lambdaclient.send(new ListFunctionsCommand({}))
                         .then((data) => {
                             data.Functions.forEach((lambdaFunction) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Functions === undefined) {
                                     this.objGlobal[region].Functions = [];
                                 }
@@ -414,10 +447,6 @@ class AwsInventory {
                     elcclient.send(new DescribeCacheClustersCommand({}))
                         .then((data) => {
                             data.CacheClusters.forEach((cacheCluster) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].CacheClusters === undefined) {
                                     this.objGlobal[region].CacheClusters = [];
                                 }
@@ -439,10 +468,6 @@ class AwsInventory {
                     asgclient.send(new DescribeAutoScalingGroupsCommand({}))
                         .then((data) => {
                             data.AutoScalingGroups.forEach((asg) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].AutoScalingGroups === undefined) {
                                     this.objGlobal[region].AutoScalingGroups = [];
                                 }
@@ -464,10 +489,6 @@ class AwsInventory {
                     asgclient.send(new DescribeLaunchConfigurationsCommand({}))
                         .then((data) => {
                             data.LaunchConfigurations.forEach((launchConfiguration) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].LaunchConfigurations === undefined) {
                                     this.objGlobal[region].LaunchConfigurations = [];
                                 }
@@ -513,10 +534,6 @@ class AwsInventory {
                                     .then((Table) => {
                                         return new Promise((resolve) => {
 
-                                            if (this.objGlobal[region] === undefined) {
-                                                this.objGlobal[region] = {};
-                                            }
-
                                             if (this.objGlobal[region].Tables === undefined) {
                                                 this.objGlobal[region].Tables = [];
                                             }
@@ -544,10 +561,6 @@ class AwsInventory {
                     rdsclient.send(new DescribeDBSubnetGroupsCommand({}))
                         .then((data) => {
                             data.DBSubnetGroups.forEach((subnetGroup) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].SubnetGroups === undefined) {
                                     this.objGlobal[region].SubnetGroups = [];
                                 }
@@ -569,10 +582,6 @@ class AwsInventory {
                     rdsclient.send(new DescribeDBParameterGroupsCommand({}))
                         .then((data) => {
                             data.DBParameterGroups.forEach((paramGroup) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].ParameterGroups === undefined) {
                                     this.objGlobal[region].ParameterGroups = [];
                                 }
@@ -594,10 +603,6 @@ class AwsInventory {
                     rdsclient.send(new DescribeOptionGroupsCommand({}))
                         .then((data) => {
                             data.OptionGroupsList.forEach((optionGroup) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].OptionGroups === undefined) {
                                     this.objGlobal[region].OptionGroups = [];
                                 }
@@ -618,10 +623,6 @@ class AwsInventory {
                     rdsclient.send(new DescribeDBClustersCommand({}))
                         .then((data) => {
                             data.DBClusters.forEach((cluster) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].DBClusters === undefined) {
                                     this.objGlobal[region].DBClusters = [];
                                 }
@@ -643,10 +644,6 @@ class AwsInventory {
                     rdsclient.send(new DescribeDBInstancesCommand({}))
                         .then((data) => {
                             data.DBInstances.forEach((dbInstance) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].DBInstances === undefined) {
                                     this.objGlobal[region].DBInstances = [];
                                 }
@@ -671,10 +668,6 @@ class AwsInventory {
                     }))
                         .then((data) => {
                             data.services.forEach((service) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].ECSServices === undefined) {
                                     this.objGlobal[region].ECSServices = [];
                                 }
@@ -722,10 +715,6 @@ class AwsInventory {
                         .then((data) => {
                             data.clusters.forEach((cluster) => {
                                 rEcsLS(cluster);
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].ECSClusters === undefined) {
                                     this.objGlobal[region].ECSClusters = [];
                                 }
@@ -768,10 +757,6 @@ class AwsInventory {
                     ecrclient.send(new DescribeRepositoriesCommand({}))
                         .then((data) => {
                             data.repositories.forEach((repo) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].ECRRepositories === undefined) {
                                     this.objGlobal[region].ECRRepositories = [];
                                 }
@@ -793,10 +778,6 @@ class AwsInventory {
                     cwclient.send(new DescribeAlarmsCommand({}))
                         .then((data) => {
                             data.MetricAlarms.forEach((alarm) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].MetricAlarms === undefined) {
                                     this.objGlobal[region].MetricAlarms = [];
                                 }
@@ -817,12 +798,7 @@ class AwsInventory {
 
                     ec2client.send(new DescribeAvailabilityZonesCommand({}))
                         .then((data) => {
-                            // console.log(data);
                             data.AvailabilityZones.forEach((AvailabilityZone) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].AvailabilityZones === undefined) {
                                     this.objGlobal[region].AvailabilityZones = [];
                                 }
@@ -844,10 +820,6 @@ class AwsInventory {
                     ec2client.send(new DescribeRouteTablesCommand({}))
                         .then((data) => {
                             data.RouteTables.forEach((routeTable) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].RouteTables === undefined) {
                                     this.objGlobal[region].RouteTables = [];
                                 }
@@ -869,10 +841,6 @@ class AwsInventory {
                     ec2client.send(new DescribeVolumesCommand({}))
                         .then((data) => {
                             data.Volumes.forEach((volume) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Volumes === undefined) {
                                     this.objGlobal[region].Volumes = [];
                                 }
@@ -894,10 +862,6 @@ class AwsInventory {
                     ec2client.send(new DescribeVpcsCommand({}))
                         .then((data) => {
                             data.Vpcs.forEach((vpc) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Vpcs === undefined) {
                                     this.objGlobal[region].Vpcs = [];
                                 }
@@ -919,10 +883,6 @@ class AwsInventory {
                     ec2client.send(new DescribeSubnetsCommand({}))
                         .then((data) => {
                             data.Subnets.forEach((subnet) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Subnets === undefined) {
                                     this.objGlobal[region].Subnets = [];
                                 }
@@ -945,10 +905,6 @@ class AwsInventory {
                         .then((data) => {
                             data.Reservations.forEach((reservation) => {
                                 reservation.Instances.forEach((instance) => {
-                                    if (this.objGlobal[region] === undefined) {
-                                        this.objGlobal[region] = {};
-                                    }
-
                                     if (this.objGlobal[region].Ec2Instances === undefined) {
                                         this.objGlobal[region].Ec2Instances = [];
                                     }
@@ -968,14 +924,12 @@ class AwsInventory {
             let rEcsDTD = (taskDefinitionArn) => {
                 return new Promise((resolve, reject) => {
 
-                    console.log(taskDefinitionArn);
                     ecsclient.send(new DescribeTaskDefinitionCommand(
                         {
                             taskDefinition: taskDefinitionArn,
                         }
                     ))
                         .then((data) => {
-                            console.log(data);
                             resolve(data.taskDefinition);
                         })
                         .catch((err) => {
@@ -990,16 +944,11 @@ class AwsInventory {
 
                     ecsclient.send(new ListTaskDefinitionsCommand({}))
                         .then((data) => {
-                            console.log(data);
                             let arrP = [];
                             data.taskDefinitionArns.forEach((taskDefArn) => {
                                 arrP.push(rEcsDTD(taskDefArn)
                                     .then((taskDefinition) => {
                                         return new Promise((resolve, reject) => {
-
-                                            if (this.objGlobal[region] === undefined) {
-                                                this.objGlobal[region] = {};
-                                            }
 
                                             if (this.objGlobal[region].TaskDefinitions === undefined) {
                                                 this.objGlobal[region].TaskDefinitions = [];
@@ -1028,10 +977,6 @@ class AwsInventory {
                     ec2client.send(new DescribeSecurityGroupsCommand({}))
                         .then((data) => {
                             data.SecurityGroups.forEach((securityGroup) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].SecurityGroups === undefined) {
                                     this.objGlobal[region].SecurityGroups = [];
                                 }
@@ -1058,8 +1003,6 @@ class AwsInventory {
                         }
                     ))
                         .then((data) => {
-                            // console.log("Mk.04");
-                            // console.log(data);
                             resolve(data);
                         })
                         .catch((err) => {
@@ -1078,14 +1021,10 @@ class AwsInventory {
                         }
                     ))
                         .then((data) => {
-                            console.log("Mk.01");
-                            console.log(data);
                             let arrResources = [];
                             let arrP = [];
 
                             data.items.forEach((Resource) => {
-                                console.log("Mk.02");
-                                console.log(Resource);
                                 if (Resource.Methods === undefined) {
                                     Resource.Methods = [];
                                 }
@@ -1095,8 +1034,6 @@ class AwsInventory {
                                 }
                                 arrResourceMethods.forEach((METHOD) => {
                                     // let Methods = Object.keys(resourceMethod)
-                                    console.log("Mk.03");
-                                    console.log(METHOD);
                                     arrP.push(rAgwGM(METHOD, Resource.id, restApiId)
                                         .then((oMethod) => {
                                             return new Promise((resolve, reject) => {
@@ -1126,7 +1063,6 @@ class AwsInventory {
 
                     agwclient.send(new GetRestApisCommand({}))
                         .then((data) => {
-                            // console.log(data);
                             let arrP = [];
                             data.items.forEach((RestApi) => {
                                 let restApiId = RestApi.id;
@@ -1135,10 +1071,6 @@ class AwsInventory {
                                         return new Promise((resolve, reject) => {
 
                                             RestApi.Resources = arrResources;
-                                            if (this.objGlobal[region] === undefined) {
-                                                this.objGlobal[region] = {};
-                                            }
-
                                             if (this.objGlobal[region].RestApis === undefined) {
                                                 this.objGlobal[region].RestApis = [];
                                             }
@@ -1191,10 +1123,6 @@ class AwsInventory {
 
                                             loadBalancer.Attributes = Attributes;
 
-                                            if (this.objGlobal[region] === undefined) {
-                                                this.objGlobal[region] = {};
-                                            }
-
                                             if (this.objGlobal[region].ApplicationLoadBalancers === undefined) {
                                                 this.objGlobal[region].ApplicationLoadBalancers = [];
                                             }
@@ -1245,10 +1173,6 @@ class AwsInventory {
                                     .then((Certificate) => {
                                         return new Promise((resolve) => {
 
-                                            if (this.objGlobal[region] === undefined) {
-                                                this.objGlobal[region] = {};
-                                            }
-
                                             if (this.objGlobal[region].Certificates === undefined) {
                                                 this.objGlobal[region].Certificates = [];
                                             }
@@ -1276,10 +1200,6 @@ class AwsInventory {
                     s3client.send(new ListBucketsCommand({}))
                         .then((data) => {
                             data.Buckets.forEach((bucket) => {
-                                if (this.objGlobal[region] === undefined) {
-                                    this.objGlobal[region] = {};
-                                }
-
                                 if (this.objGlobal[region].Buckets === undefined) {
                                     this.objGlobal[region].Buckets = [];
                                 }
@@ -1306,7 +1226,6 @@ class AwsInventory {
 
                     let fRand = Math.random();
                     let rWait = Math.round(fRand * this.MAX_WAIT);
-                    // console.log(`pausing ${rWait} ms....`);
                     await new Promise(resolve => setTimeout(resolve, rWait));
 
 
@@ -1321,13 +1240,11 @@ class AwsInventory {
 
                             switch (e.name) {
                                 case 'AccessDeniedException':
-                                    // console.log("Mk.06");
                                     console.warn(`No retry - access denied insurmountable exception.`);
                                     reject(e);
                                     break;
 
                                 case 'UnrecognizedClientException':
-                                    // console.log("Mk.07");
                                     console.warn(`No retry - Unrecognized excpetion, likely no access to region.`);
                                     reject(e);
                                     break;
@@ -1338,7 +1255,6 @@ class AwsInventory {
                                         console.log(`Retrying, prev error was ${e.name}`);
                                         p = await requestSender(fName, retry + 1);
                                     } else {
-                                        console.log("Mk.08");
                                         console.warn(`Too many retries; failing.`);
                                         reject(e);
                                     }
@@ -1346,8 +1262,6 @@ class AwsInventory {
                             // let re = /AccessDenied/g;
                             // let arrMatches = e.match(re);
                             // if (arrMatches !== null) {
-                            //     console.log("Mk.05");
-                            //     console.log(arrMatches);
                             // }
                         });
                 });
@@ -1368,6 +1282,7 @@ class AwsInventory {
                         if (region === 'us-east-1') {
                             arrRegionRequests.push(requestSender(rIamLP));
                             arrRegionRequests.push(requestSender(rIamLR));
+                            arrRegionRequests.push(requestSender(rIamLU));
                         }
                         break;
 
@@ -1456,7 +1371,7 @@ class AwsInventory {
 
 
     inventory() {
-        return new Promise((resolve) => {
+        return new Promise(async (resolve) => {
 
             this.objGlobal = {};
             let arrRequests = [];
@@ -1465,6 +1380,7 @@ class AwsInventory {
             Calculate temporal spread
              */
             this.MAX_WAIT = Math.floor((this.regions.length + this.services.length) / 2) * 1000;
+            arrRequests.push(this.obtainAccountNumber());
             this.regions.forEach((region) => {
                 arrRequests.push(this.run(region, this.services, this.credentials));
             });
