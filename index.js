@@ -106,8 +106,17 @@ const {
     DescribeSubnetsCommand,
     DescribeRouteTablesCommand,
     DescribeVolumesCommand,
-    DescribeSecurityGroupsCommand
+    DescribeSecurityGroupsCommand,
+    DescribeAvailabilityZonesCommand
 } = require('@aws-sdk/client-ec2');
+
+const {mockclient} = require('aws-sdk-client-mock');
+const ec2Mock = mockclient(EC2Client);
+
+aaaasdfasdf
+ec2Mock.on(DescribeInstancesCommand)
+    .resolves({MessageId: Math.round(Math.random() * 1000000)});
+console.log('  Mk.100');
 
 class AwsInventory {
 
@@ -803,6 +812,32 @@ class AwsInventory {
             };
 
 
+            let rEc2DAZ = () => {
+                return new Promise((resolve, reject) => {
+
+                    ec2client.send(new DescribeAvailabilityZonesCommand({}))
+                        .then((data) => {
+                            // console.log(data);
+                            data.AvailabilityZones.forEach((AvailabilityZone) => {
+                                if (this.objGlobal[region] === undefined) {
+                                    this.objGlobal[region] = {};
+                                }
+
+                                if (this.objGlobal[region].AvailabilityZones === undefined) {
+                                    this.objGlobal[region].AvailabilityZones = [];
+                                }
+
+                                this.objGlobal[region].AvailabilityZones.push(AvailabilityZone);
+                            });
+                            resolve(`rEc2DAZ`);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+
             let rEc2DRT = () => {
                 return new Promise((resolve, reject) => {
 
@@ -1374,6 +1409,7 @@ class AwsInventory {
                         arrRegionRequests.push(requestSender(rEc2DV));
                         arrRegionRequests.push(requestSender(rEc2DVo));
                         arrRegionRequests.push(requestSender(rEc2DRT));
+                        arrRegionRequests.push(requestSender(rEc2DAZ));
                         break;
 
                     case 'cw':
