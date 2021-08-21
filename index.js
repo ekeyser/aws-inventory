@@ -446,7 +446,9 @@ class AwsInventory {
             let rElcDCC = () => {
                 return new Promise((resolve, reject) => {
 
-                    elcclient.send(new DescribeCacheClustersCommand({}))
+                    elcclient.send(new DescribeCacheClustersCommand({
+                        ShowCacheNodeInfo: true,
+                    }))
                         .then((data) => {
                             data.CacheClusters.forEach((cacheCluster) => {
                                 if (this.objGlobal[region].CacheClusters === undefined) {
