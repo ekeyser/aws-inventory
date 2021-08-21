@@ -42,7 +42,9 @@ const {
 
 const {
     ElastiCacheClient,
-    DescribeCacheClustersCommand
+    DescribeCacheClustersCommand,
+    DescribeReplicationGroupsCommand,
+    DescribeCacheSubnetGroupsCommand,
 } = require('@aws-sdk/client-elasticache');
 
 const {
@@ -150,8 +152,8 @@ class AwsInventory {
 
                     stsclient.send(new GetCallerIdentityCommand({}))
                         .then((data) => {
-                            this.objGlobal[`account`] = data.Account;
-                            resolve(`rEc2DSG`);
+                            this.objGlobal[region][`Account`] = data.Account;
+                            resolve(`rStsGCI`);
                         })
                         .catch((e) => {
                             reject(e);
@@ -454,6 +456,48 @@ class AwsInventory {
                                 this.objGlobal[region].CacheClusters.push(cacheCluster);
                             });
                             resolve(`rElcDCC`);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+
+            let rElcDCSG = () => {
+                return new Promise((resolve, reject) => {
+
+                    elcclient.send(new DescribeCacheSubnetGroupsCommand({}))
+                        .then((data) => {
+                            data.CacheSubnetGroups.forEach((subnetGroup) => {
+                                if (this.objGlobal[region].CacheSubnetGroups === undefined) {
+                                    this.objGlobal[region].CacheSubnetGroups = [];
+                                }
+
+                                this.objGlobal[region].CacheSubnetGroups.push(subnetGroup);
+                            });
+                            resolve(`rElcDCSG`);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+
+            let rElcDRG = () => {
+                return new Promise((resolve, reject) => {
+
+                    elcclient.send(new DescribeReplicationGroupsCommand({}))
+                        .then((data) => {
+                            data.ReplicationGroups.forEach((replicationGroup) => {
+                                if (this.objGlobal[region].ReplicationGroups === undefined) {
+                                    this.objGlobal[region].ReplicationGroups = [];
+                                }
+
+                                this.objGlobal[region].ReplicationGroups.push(replicationGroup);
+                            });
+                            resolve(`rElcDRG`);
                         })
                         .catch((e) => {
                             reject(e);
@@ -1298,6 +1342,8 @@ class AwsInventory {
 
                     case 'elc':
                         arrRegionRequests.push(requestSender(rElcDCC));
+                        arrRegionRequests.push(requestSender(rElcDCSG));
+                        arrRegionRequests.push(requestSender(rElcDRG));
                         break;
 
                     case 'asg':
