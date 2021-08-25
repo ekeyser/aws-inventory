@@ -11,6 +11,12 @@ const {
 } = require('@aws-sdk/client-sts');
 
 const {
+    SQSClient,
+    ListQueuesCommand,
+    GetQueueAttributesCommand,
+} = require('@aws-sdk/client-sqs');
+
+const {
     ACMClient,
     ListCertificatesCommand,
     DescribeCertificateCommand,
@@ -281,6 +287,13 @@ class AwsInventory {
             );
 
             const ecsclient = new ECSClient(
+                {
+                    region,
+                    credentials
+                }
+            );
+
+            const sqsclient = new SQSClient(
                 {
                     region,
                     credentials
@@ -1261,13 +1274,70 @@ class AwsInventory {
             };
 
 
+            let rSqsGQA = (QueueUrl) => {
+                return new Promise((resolve, reject) => {
+                    sqsclient.send(new GetQueueAttributesCommand(
+                        {
+                            AttributeNames: [
+                                'All'
+                            ],
+                            QueueUrl,
+                        }
+                    ))
+                        .then((data) => {
+                            resolve(data);
+                        })
+                        .catch((err) => {
+                            reject(err);
+                        });
+                });
+            };
+
+
+            let rSqsLQ = () => {
+                return new Promise((resolve, reject) => {
+
+                    sqsclient.send(new ListQueuesCommand({}))
+                        .then((data) => {
+                            const arrP = [];
+                            const arrQueueUrls = data.QueueUrls;
+                            if (arrQueueUrls !== undefined) {
+
+                                arrQueueUrls.forEach((QueueUrl) => {
+                                    arrP.push(rSqsGQA(QueueUrl)
+                                        .then((Data) => {
+                                            return new Promise((resolve) => {
+
+                                                if (this.objGlobal[region].Queues === undefined) {
+                                                    this.objGlobal[region].Queues = [];
+                                                }
+
+                                                this.objGlobal[region].Queues.push(Data);
+                                                resolve(`queue listed for ${QueueUrl}`)
+                                            });
+                                        }));
+                                });
+
+                            }
+                            Promise.all(arrP)
+                                .then(() => {
+                                    resolve(`rSqSLQ`);
+                                });
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+                });
+            };
+
+
             const RETRIES = 2;
             let requestSender = (fName, retry) => {
                 return new Promise(async (resolve, reject) => {
                     if (retry === undefined) {
                         retry = 0;
                     }
-                    console.log(`Attempt ${retry + 1} for ${fName.name} for region ${region}`);
+                    // console.log(`Attempt ${retry + 1} for ${fName.name} for region ${region}`);
 
 
                     let fRand = Math.random();
@@ -1402,6 +1472,10 @@ class AwsInventory {
 
                     case 'agw':
                         arrRegionRequests.push(requestSender(rAgwGRAs));
+                        break;
+
+                    case 'sqs':
+                        arrRegionRequests.push(requestSender(rSqsLQ));
                         break;
 
                     default:
