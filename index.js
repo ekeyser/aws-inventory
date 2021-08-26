@@ -12,116 +12,118 @@ const {
 
 const {
     SQSClient,
-    ListQueuesCommand,
     GetQueueAttributesCommand,
+    paginateListQueues,
 } = require('@aws-sdk/client-sqs');
 
 const {
     ACMClient,
-    ListCertificatesCommand,
     DescribeCertificateCommand,
+    paginateListCertificates,
 } = require('@aws-sdk/client-acm');
 
 const {
     ElasticLoadBalancingV2Client,
-    DescribeLoadBalancersCommand,
     DescribeLoadBalancerAttributesCommand,
+    paginateDescribeLoadBalancers,
+    paginateDescribeTargetGroups,
+    paginateDescribeListeners,
 } = require('@aws-sdk/client-elastic-load-balancing-v2');
 
 const {
     LambdaClient,
-    ListFunctionsCommand,
+    paginateListFunctions,
 } = require('@aws-sdk/client-lambda');
 
 const {
     CloudFrontClient,
-    ListDistributionsCommand,
     ListCachePoliciesCommand,
+    paginateListDistributions,
 } = require('@aws-sdk/client-cloudfront');
 
 const {
     IAMClient,
-    ListPoliciesCommand,
-    ListRolesCommand,
-    ListUsersCommand,
+    paginateListPolicies,
+    paginateListUsers,
+    paginateListRoles,
 } = require('@aws-sdk/client-iam');
 
 const {
     ElastiCacheClient,
-    DescribeCacheClustersCommand,
-    DescribeReplicationGroupsCommand,
-    DescribeCacheSubnetGroupsCommand,
+    paginateDescribeCacheClusters,
+    paginateDescribeReplicationGroups,
+    paginateDescribeCacheSubnetGroups,
 } = require('@aws-sdk/client-elasticache');
 
 const {
     AutoScalingClient,
-    DescribeLaunchConfigurationsCommand,
-    DescribeAutoScalingGroupsCommand,
+    paginateDescribeLaunchConfigurations,
+    paginateDescribeAutoScalingGroups,
 } = require('@aws-sdk/client-auto-scaling');
 
 const {
     Route53Client,
-    ListHostedZonesCommand
+    paginateListHostedZones,
 } = require('@aws-sdk/client-route-53');
 
 const {
     DynamoDBClient,
     DescribeTableCommand,
-    ListTablesCommand
+    paginateListTables,
 } = require('@aws-sdk/client-dynamodb');
 
 const {
     CloudWatchClient,
-    DescribeAlarmsCommand,
+    paginateDescribeAlarms,
 } = require('@aws-sdk/client-cloudwatch');
 
 const {
     ECSClient,
     DescribeClustersCommand,
-    ListServicesCommand,
-    ListClustersCommand,
     DescribeServicesCommand,
-    ListTaskDefinitionsCommand,
     DescribeTaskDefinitionCommand,
+    paginateListTaskDefinitions,
+    paginateListClusters,
+    paginateListServices,
 } = require('@aws-sdk/client-ecs');
 
 const {
     ECRClient,
-    DescribeRepositoriesCommand,
+    paginateDescribeRepositories,
 } = require('@aws-sdk/client-ecr');
 
 const {
     RDSClient,
-    DescribeDBInstancesCommand,
-    DescribeDBSubnetGroupsCommand,
-    DescribeDBParameterGroupsCommand,
-    DescribeOptionGroupsCommand,
-    DescribeDBClustersCommand,
+    paginateDescribeDBClusters,
+    paginateDescribeOptionGroups,
+    paginateDescribeDBParameterGroups,
+    paginateDescribeDBSubnetGroups,
+    paginateDescribeDBInstances,
 } = require('@aws-sdk/client-rds');
 
 const {
     S3Client,
-    ListBucketsCommand
+    ListBucketsCommand,
 } = require('@aws-sdk/client-s3');
 
 const {
     APIGatewayClient,
-    GetRestApisCommand,
-    GetRestApiCommand,
     GetMethodCommand,
-    GetUsagePlansCommand,
-    GetResourcesCommand,
+    paginateGetResources,
+    paginateGetUsagePlans,
+    paginateGetRestApis,
 } = require('@aws-sdk/client-api-gateway');
 
 const {
     EC2Client,
-    DescribeInstancesCommand,
     DescribeVpcsCommand,
-    DescribeSubnetsCommand,
-    DescribeRouteTablesCommand,
-    DescribeVolumesCommand,
-    DescribeSecurityGroupsCommand,
-    DescribeAvailabilityZonesCommand
+    DescribeAvailabilityZonesCommand,
+    paginateDescribeSecurityGroups,
+    paginateDescribeVolumes,
+    paginateDescribeRouteTables,
+    paginateDescribeSubnets,
+    paginateDescribeVpcs,
+    paginateDescribeInstances,
 } = require('@aws-sdk/client-ec2');
 
 class AwsInventory {
@@ -326,107 +328,116 @@ class AwsInventory {
 
 
             let rCfLD = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                        cfclient.send(new ListDistributionsCommand({}))
-                            .then((data) => {
-                                data.DistributionList.Items.forEach((distribution) => {
-                                    if (this.objGlobal[region].Distributions === undefined) {
-                                        this.objGlobal[region].Distributions = [];
-                                    }
+                    const pConfig = {
+                        client: cfclient,
+                        pageSize: 25,
+                    };
 
-                                    this.objGlobal[region].Distributions.push(distribution);
-                                });
-                                resolve(`rCfLD`);
-                            })
-                            .catch((e) => {
-                                reject(e);
-                            });
+                    const cmdParams = {};
+
+                    const paginator = paginateListDistributions(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.DistributionList.Items);
                     }
-                );
+                    this.objGlobal[region].Distributions = arr;
+                    resolve(`${region}-rCfLD`);
+                });
             };
 
 
             let rIamLU = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    iamclient.send(new ListUsersCommand({}))
-                        .then((data) => {
-                            data.Users.forEach((user) => {
-                                if (this.objGlobal[region].Users === undefined) {
-                                    this.objGlobal[region].Users = [];
-                                }
+                    const pConfig = {
+                        client: iamclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Users.push(user);
-                            });
-                            resolve(`rIamLU`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateListUsers(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Users);
+                    }
+                    this.objGlobal[region].Users = arr;
+                    resolve(`${region}-rIamLU`);
                 });
             };
 
 
             let rIamLP = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    iamclient.send(new ListPoliciesCommand({}))
-                        .then((data) => {
-                            data.Policies.forEach((policy) => {
-                                if (this.objGlobal[region].Policies === undefined) {
-                                    this.objGlobal[region].Policies = [];
-                                }
+                    const pConfig = {
+                        client: iamclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Policies.push(policy);
-                            });
-                            resolve(`rIamLP`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateListPolicies(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Policies);
+                    }
+                    this.objGlobal[region].Policies = arr;
+                    resolve(`${region}-rIamLP`);
                 });
             };
 
 
             let rIamLR = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    iamclient.send(new ListRolesCommand({}))
-                        .then((data) => {
-                            data.Roles.forEach((role) => {
-                                if (this.objGlobal[region].Roles === undefined) {
-                                    this.objGlobal[region].Roles = [];
-                                }
+                    const pConfig = {
+                        client: iamclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Roles.push(role);
-                            });
-                            resolve(`rIamLR`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateListRoles(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Roles);
+                    }
+                    this.objGlobal[region].Roles = arr;
+                    resolve(`${region}-rIamLR`);
                 });
             };
 
 
             let rR53LHZ = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    r53client.send(new ListHostedZonesCommand({}))
-                        .then((data) => {
-                            data.HostedZones.forEach((hostedZone) => {
-                                if (this.objGlobal[region].HostedZones === undefined) {
-                                    this.objGlobal[region].HostedZones = [];
-                                }
+                    const pConfig = {
+                        client: r53client,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].HostedZones.push(hostedZone);
-                            });
-                            resolve(`rR53LHZ`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateListHostedZones(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.HostedZones);
+                    }
+                    this.objGlobal[region].HostedZones = arr;
+                    resolve(`${region}-rR53LHZ`);
                 });
             };
 
@@ -435,130 +446,139 @@ class AwsInventory {
             ALL REGIONS
              */
             let rLamLF = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    lambdaclient.send(new ListFunctionsCommand({}))
-                        .then((data) => {
-                            data.Functions.forEach((lambdaFunction) => {
-                                if (this.objGlobal[region].Functions === undefined) {
-                                    this.objGlobal[region].Functions = [];
-                                }
+                    const pConfig = {
+                        client: lambdaclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Functions.push(lambdaFunction);
-                            });
-                            resolve(`rLamLF`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
 
+                    const paginator = paginateListFunctions(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Functions);
+                    }
+                    this.objGlobal[region].Functions = arr;
+                    resolve(`${region}-rLamLF`);
                 });
             };
 
 
             let rElcDCC = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    elcclient.send(new DescribeCacheClustersCommand({
-                        ShowCacheNodeInfo: true,
-                    }))
-                        .then((data) => {
-                            data.CacheClusters.forEach((cacheCluster) => {
-                                if (this.objGlobal[region].CacheClusters === undefined) {
-                                    this.objGlobal[region].CacheClusters = [];
-                                }
+                    const pConfig = {
+                        client: elcclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].CacheClusters.push(cacheCluster);
-                            });
-                            resolve(`rElcDCC`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeCacheClusters(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.CacheClusters);
+                    }
+                    this.objGlobal[region].CacheClusters = arr;
+                    resolve(`${region}-rElcDCC`);
                 });
             };
 
 
             let rElcDCSG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    elcclient.send(new DescribeCacheSubnetGroupsCommand({}))
-                        .then((data) => {
-                            data.CacheSubnetGroups.forEach((subnetGroup) => {
-                                if (this.objGlobal[region].CacheSubnetGroups === undefined) {
-                                    this.objGlobal[region].CacheSubnetGroups = [];
-                                }
+                    const pConfig = {
+                        client: elcclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].CacheSubnetGroups.push(subnetGroup);
-                            });
-                            resolve(`rElcDCSG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeCacheSubnetGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.CacheSubnetGroups);
+                    }
+                    this.objGlobal[region].CacheSubnetGroups = arr;
+                    resolve(`${region}-rElcDCSG`);
                 });
             };
 
 
             let rElcDRG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    elcclient.send(new DescribeReplicationGroupsCommand({}))
-                        .then((data) => {
-                            data.ReplicationGroups.forEach((replicationGroup) => {
-                                if (this.objGlobal[region].ReplicationGroups === undefined) {
-                                    this.objGlobal[region].ReplicationGroups = [];
-                                }
+                    const pConfig = {
+                        client: elcclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].ReplicationGroups.push(replicationGroup);
-                            });
-                            resolve(`rElcDRG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeReplicationGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.ReplicationGroups);
+                    }
+                    this.objGlobal[region].ReplicationGroups = arr;
+                    resolve(`${region}-rElcDRG`);
                 });
             };
 
 
             let rAsgDASG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    asgclient.send(new DescribeAutoScalingGroupsCommand({}))
-                        .then((data) => {
-                            data.AutoScalingGroups.forEach((asg) => {
-                                if (this.objGlobal[region].AutoScalingGroups === undefined) {
-                                    this.objGlobal[region].AutoScalingGroups = [];
-                                }
+                    const pConfig = {
+                        client: asgclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].AutoScalingGroups.push(asg);
-                            });
-                            resolve(`rAsgDASG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeAutoScalingGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.AutoScalingGroups);
+                    }
+                    this.objGlobal[region].AutoScalingGroups = arr;
+                    resolve(`${region}-rAsgDASG`);
                 });
             };
 
 
             let rAsgDLC = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    asgclient.send(new DescribeLaunchConfigurationsCommand({}))
-                        .then((data) => {
-                            data.LaunchConfigurations.forEach((launchConfiguration) => {
-                                if (this.objGlobal[region].LaunchConfigurations === undefined) {
-                                    this.objGlobal[region].LaunchConfigurations = [];
-                                }
+                    const pConfig = {
+                        client: asgclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].LaunchConfigurations.push(launchConfiguration);
-                            });
-                            resolve(`rAsgDLC`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeLaunchConfigurations(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.LaunchConfigurations);
+                    }
+                    this.objGlobal[region].LaunchConfigurations = arr;
+                    resolve(`${region}-rAsgDLC`);
                 });
             };
 
@@ -582,138 +602,148 @@ class AwsInventory {
 
 
             let rDdbLT = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ddbclient.send(new ListTablesCommand({}))
-                        .then((data) => {
+                    const pConfig = {
+                        client: ddbclient,
+                        pageSize: 25,
+                    };
 
-                            let arrP = [];
-                            data.TableNames.forEach((TableName) => {
-                                arrP.push(rDdbDT(TableName)
-                                    .then((Table) => {
-                                        return new Promise((resolve) => {
+                    const cmdParams = {};
 
-                                            if (this.objGlobal[region].Tables === undefined) {
-                                                this.objGlobal[region].Tables = [];
-                                            }
+                    const paginator = paginateListTables(pConfig, cmdParams);
 
-                                            this.objGlobal[region].Tables.push(Table);
-                                            resolve(`Table described for ${TableName}`);
-                                        });
-                                    }));
-                            });
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rDdbLT`);
-                                });
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.TableNames);
+                    }
+
+                    const Tables = [];
+
+                    for (let i = 0; i < arr.length; i++) {
+                        let TableName = arr[i];
+                        let Table = await rDdbDT(TableName);
+                        Tables.push(Table);
+                    }
+
+                    this.objGlobal[region].Tables = Tables;
+                    resolve(`${region}-rDdbLT`);
                 });
             };
 
 
             let rRdsDSG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    rdsclient.send(new DescribeDBSubnetGroupsCommand({}))
-                        .then((data) => {
-                            data.DBSubnetGroups.forEach((subnetGroup) => {
-                                if (this.objGlobal[region].SubnetGroups === undefined) {
-                                    this.objGlobal[region].SubnetGroups = [];
-                                }
+                    const pConfig = {
+                        client: rdsclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].SubnetGroups.push(subnetGroup);
-                            });
-                            resolve(`rRdsDSG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeDBSubnetGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.DBSubnetGroups);
+                    }
+                    this.objGlobal[region].DBSubnetGroups = arr;
+                    resolve(`${region}-rRdsDSG`);
                 });
             };
 
 
             let rRdsDPG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    rdsclient.send(new DescribeDBParameterGroupsCommand({}))
-                        .then((data) => {
-                            data.DBParameterGroups.forEach((paramGroup) => {
-                                if (this.objGlobal[region].ParameterGroups === undefined) {
-                                    this.objGlobal[region].ParameterGroups = [];
-                                }
+                    const pConfig = {
+                        client: rdsclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].ParameterGroups.push(paramGroup);
-                            });
-                            resolve(`rRdsDPG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeDBParameterGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.DBParameterGroups);
+                    }
+                    this.objGlobal[region].ParameterGroups = arr;
+                    resolve(`${region}-rRdsDPG`);
                 });
             };
 
 
             let rRdsDOG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    rdsclient.send(new DescribeOptionGroupsCommand({}))
-                        .then((data) => {
-                            data.OptionGroupsList.forEach((optionGroup) => {
-                                if (this.objGlobal[region].OptionGroups === undefined) {
-                                    this.objGlobal[region].OptionGroups = [];
-                                }
+                    const pConfig = {
+                        client: rdsclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].OptionGroups.push(optionGroup);
-                            });
-                            resolve(`rRdsDOG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeOptionGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.OptionGroupsList);
+                    }
+                    this.objGlobal[region].OptionGroups = arr;
+                    resolve(`${region}-rRdsDOG`);
                 });
             };
 
 
             let rRdsDC = () => {
-                return new Promise((resolve, reject) => {
-                    rdsclient.send(new DescribeDBClustersCommand({}))
-                        .then((data) => {
-                            data.DBClusters.forEach((cluster) => {
-                                if (this.objGlobal[region].DBClusters === undefined) {
-                                    this.objGlobal[region].DBClusters = [];
-                                }
+                return new Promise(async (resolve, reject) => {
 
-                                this.objGlobal[region].DBClusters.push(cluster);
-                            });
-                            resolve(`rRdsDC`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const pConfig = {
+                        client: rdsclient,
+                        pageSize: 25,
+                    };
+
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeDBClusters(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.DBClusters);
+                    }
+                    this.objGlobal[region].DBClusters = arr;
+                    resolve(`${region}-rRdsDC`);
                 });
             };
 
 
             let rRdsDI = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    rdsclient.send(new DescribeDBInstancesCommand({}))
-                        .then((data) => {
-                            data.DBInstances.forEach((dbInstance) => {
-                                if (this.objGlobal[region].DBInstances === undefined) {
-                                    this.objGlobal[region].DBInstances = [];
-                                }
+                    const pConfig = {
+                        client: rdsclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].DBInstances.push(dbInstance);
-                            });
-                            resolve(`rRdsDI`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeDBInstances(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.DBInstances);
+                    }
+                    this.objGlobal[region].DBInstances = arr;
+                    resolve(`${region}-rRdsDI`);
                 });
             };
 
@@ -743,24 +773,30 @@ class AwsInventory {
 
 
             let rEcsLS = (cluster) => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ecsclient.send(new ListServicesCommand({
-                        cluster: cluster.clusterArn,
-                    }))
-                        .then((data) => {
-                            if (data.serviceArns.length > 0) {
-                                rEcsDS(cluster.clusterArn, data.serviceArns)
-                                    .then(() => {
-                                        resolve(`rEcsLS`);
-                                    });
-                            } else {
-                                resolve(`rEcsLS`);
-                            }
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const pConfig = {
+                        client: ecsclient,
+                        pageSize: 25,
+                    };
+
+                    const cmdParams = {
+                        cluster: cluster.clusterArn
+                    };
+
+                    const paginator = paginateListServices(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.serviceArns);
+                    }
+
+                    for (let i = 0; i < arr.length; i++) {
+                        let serviceArn = arr[i];
+                        await rEcsDS(cluster.clusterArn, serviceArn);
+                    }
+                    resolve(`${region}-rEcsLS`);
                 });
             };
 
@@ -790,64 +826,73 @@ class AwsInventory {
 
 
             let rEcsLC = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ecsclient.send(new ListClustersCommand({}))
-                        .then((data) => {
-                            if (data.clusterArns.length > 0) {
-                                rEcsDC(data.clusterArns)
-                                    .then(() => {
-                                        resolve(`rEcsLC`);
-                                    });
-                            } else {
-                                resolve(`rEcsLC`);
-                            }
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const pConfig = {
+                        client: ecsclient,
+                        pageSize: 25,
+                    };
+
+                    const cmdParams = {};
+
+                    const paginator = paginateListClusters(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.clusterArns);
+                    }
+
+                    for (let i = 0; i < arr.length; i++) {
+                        rEcsDC(arr[i].clusterArns)
+                    }
+                    resolve(`${region}-rEcsLC`);
                 });
             };
 
 
             let rEcrDR = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ecrclient.send(new DescribeRepositoriesCommand({}))
-                        .then((data) => {
-                            data.repositories.forEach((repo) => {
-                                if (this.objGlobal[region].ECRRepositories === undefined) {
-                                    this.objGlobal[region].ECRRepositories = [];
-                                }
+                    const pConfig = {
+                        client: ecrclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].ECRRepositories.push(repo);
-                            });
-                            resolve(`rEcrDR`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeRepositories(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.repositories);
+                    }
+                    this.objGlobal[region].ECRRepositories = arr;
+                    resolve(`${region}-rEcrDR`);
                 });
             };
 
 
             let rCwDA = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    cwclient.send(new DescribeAlarmsCommand({}))
-                        .then((data) => {
-                            data.MetricAlarms.forEach((alarm) => {
-                                if (this.objGlobal[region].MetricAlarms === undefined) {
-                                    this.objGlobal[region].MetricAlarms = [];
-                                }
+                    const pConfig = {
+                        client: cwclient,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].MetricAlarms.push(alarm);
-                            });
-                            resolve(`rCwDA`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeAlarms(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.MetricAlarms);
+                    }
+                    this.objGlobal[region].MetricAlarms = arr;
+                    resolve(`${region}-rCwDA`);
                 });
             };
 
@@ -874,43 +919,47 @@ class AwsInventory {
 
 
             let rEc2DRT = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ec2client.send(new DescribeRouteTablesCommand({}))
-                        .then((data) => {
-                            data.RouteTables.forEach((routeTable) => {
-                                if (this.objGlobal[region].RouteTables === undefined) {
-                                    this.objGlobal[region].RouteTables = [];
-                                }
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].RouteTables.push(routeTable);
-                            });
-                            resolve(`rEc2DRT`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeRouteTables(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.RouteTables);
+                    }
+                    this.objGlobal[region].RouteTables = arr;
+                    resolve(`${region}-rEc2DRT`);
                 });
             };
 
 
             let rEc2DVo = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ec2client.send(new DescribeVolumesCommand({}))
-                        .then((data) => {
-                            data.Volumes.forEach((volume) => {
-                                if (this.objGlobal[region].Volumes === undefined) {
-                                    this.objGlobal[region].Volumes = [];
-                                }
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Volumes.push(volume);
-                            });
-                            resolve(`rEc2DVo`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeVolumes(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Volumes);
+                    }
+                    this.objGlobal[region].Volumes = arr;
+                    resolve(`${region}-rEc2DVo`);
                 });
             };
 
@@ -937,45 +986,49 @@ class AwsInventory {
 
 
             let rEc2DS = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ec2client.send(new DescribeSubnetsCommand({}))
-                        .then((data) => {
-                            data.Subnets.forEach((subnet) => {
-                                if (this.objGlobal[region].Subnets === undefined) {
-                                    this.objGlobal[region].Subnets = [];
-                                }
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].Subnets.push(subnet);
-                            });
-                            resolve(`rEc2DS`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeSubnets(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Subnets);
+                    }
+                    this.objGlobal[region].Subnets = arr;
+                    resolve(`${region}-rEc2DS`);
                 });
             };
 
 
             let rEc2DI = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ec2client.send(new DescribeInstancesCommand({}))
-                        .then((data) => {
-                            data.Reservations.forEach((reservation) => {
-                                reservation.Instances.forEach((instance) => {
-                                    if (this.objGlobal[region].Ec2Instances === undefined) {
-                                        this.objGlobal[region].Ec2Instances = [];
-                                    }
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 25,
+                    };
 
-                                    this.objGlobal[region].Ec2Instances.push(instance);
-                                });
-                            });
-                            resolve(`rEc2DI`);
-                        })
-                        .catch((e) => {
-                            reject(e);
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeInstances(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        page.Reservations.forEach((reservation) => {
+                            arr.push(...reservation.Instances)
                         });
+                    }
+                    this.objGlobal[region].Ec2Instances = arr;
+                    resolve(`${region}-rEc2DI`);
                 });
             };
 
@@ -999,54 +1052,55 @@ class AwsInventory {
 
 
             let rEcsLTD = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ecsclient.send(new ListTaskDefinitionsCommand({}))
-                        .then((data) => {
-                            let arrP = [];
-                            data.taskDefinitionArns.forEach((taskDefArn) => {
-                                arrP.push(rEcsDTD(taskDefArn)
-                                    .then((taskDefinition) => {
-                                        return new Promise((resolve, reject) => {
+                    const pConfig = {
+                        client: ecsclient,
+                        pageSize: 25,
+                    };
 
-                                            if (this.objGlobal[region].TaskDefinitions === undefined) {
-                                                this.objGlobal[region].TaskDefinitions = [];
-                                            }
+                    const cmdParams = {};
 
-                                            this.objGlobal[region].TaskDefinitions.push(taskDefinition);
-                                            resolve(`taskDefinition described.`);
-                                        });
-                                    }));
-                            });
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rEc2DSG`);
-                                });
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const paginator = paginateListTaskDefinitions(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.taskDefinitionArns);
+                    }
+
+                    const arrTaskDefinitions = []
+                    for (let i = 0; i < arr.length; i++) {
+                        let taskDefArn = arr[i];
+                        let taskDefinition = await rEcsDTD(taskDefArn);
+                        arrTaskDefinitions.push(taskDefinition);
+                    }
+
+                    this.objGlobal[region].TaskDefinitions = arrTaskDefinitions;
+                    resolve(`${region}-rEcsLTD`);
                 });
             };
 
 
             let rEc2DSG = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    ec2client.send(new DescribeSecurityGroupsCommand({}))
-                        .then((data) => {
-                            data.SecurityGroups.forEach((securityGroup) => {
-                                if (this.objGlobal[region].SecurityGroups === undefined) {
-                                    this.objGlobal[region].SecurityGroups = [];
-                                }
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 25,
+                    };
 
-                                this.objGlobal[region].SecurityGroups.push(securityGroup);
-                            });
-                            resolve(`rEc2DSG`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeSecurityGroups(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.SecurityGroups)
+                    }
+                    this.objGlobal[region].SecurityGroups = arr;
+                    resolve(`${region}-rEc2DSG`);
                 });
             };
 
@@ -1072,81 +1126,75 @@ class AwsInventory {
 
 
             let rAgwGR = (restApiId) => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    agwclient.send(new GetResourcesCommand(
-                        {
-                            restApiId,
+                    const pConfig = {
+                        client: agwclient,
+                        pageSize: 25,
+                    };
+
+                    const cmdParams = {
+                        restApiId,
+                    };
+
+                    const paginator = paginateGetResources(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(page.items);
+                    }
+
+                    const arrResources = [];
+                    for (let i = 0; i < arr.length; i++) {
+                        let Resource = arr[i];
+                        if (Resource.Methods === undefined) {
+                            Resource.Methods = [];
                         }
-                    ))
-                        .then((data) => {
-                            let arrResources = [];
-                            let arrP = [];
+                        const arrResourceMethods = [];
+                        if (Resource.resourceMethods !== undefined) {
+                            arrResourceMethods = Object.keys(Resource.resourceMethods);
+                        }
+                        for (let j = 0; j < arrResourceMethods.length; j++) {
+                            let METHOD = arrResourceMethods[j];
+                            let oMethod = await rAgwGM(METHOD, Resource.id, restApiId);
+                            Resource.Methods.push(oMethod);
+                        }
+                        arrResources.push(Resource);
+                    }
 
-                            data.items.forEach((Resource) => {
-                                if (Resource.Methods === undefined) {
-                                    Resource.Methods = [];
-                                }
-                                let arrResourceMethods = [];
-                                if (Resource.resourceMethods !== undefined) {
-                                    arrResourceMethods = Object.keys(Resource.resourceMethods);
-                                }
-                                arrResourceMethods.forEach((METHOD) => {
-                                    // let Methods = Object.keys(resourceMethod)
-                                    arrP.push(rAgwGM(METHOD, Resource.id, restApiId)
-                                        .then((oMethod) => {
-                                            return new Promise((resolve, reject) => {
-                                                Resource.Methods.push(oMethod);
-                                                resolve(`Method objtained for ${Resource.id}`);
-                                            });
-
-                                        }));
-                                });
-                                arrResources.push(Resource);
-                            });
-
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(arrResources);
-                                });
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
+                    resolve(arrResources);
                 });
             };
 
 
             let rAgwGRAs = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    agwclient.send(new GetRestApisCommand({}))
-                        .then((data) => {
-                            let arrP = [];
-                            data.items.forEach((RestApi) => {
-                                let restApiId = RestApi.id;
-                                arrP.push(rAgwGR(restApiId)
-                                    .then((arrResources) => {
-                                        return new Promise((resolve, reject) => {
+                    const pConfig = {
+                        client: agwclient,
+                        pageSize: 25,
+                    };
 
-                                            RestApi.Resources = arrResources;
-                                            if (this.objGlobal[region].RestApis === undefined) {
-                                                this.objGlobal[region].RestApis = [];
-                                            }
+                    const cmdParams = {};
 
-                                            this.objGlobal[region].RestApis.push(RestApi);
-                                            resolve(`Resources obtained for ${restApiId}`);
-                                        });
-                                    }));
-                            });
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rAgwGRA`);
-                                });
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const paginator = paginateGetRestApis(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.items)
+                    }
+
+                    for (let i = 0; i < arr.length; i++) {
+                        let RestApi = arr[i];
+                        const arrResources = await rAgwGR(RestApi.id);
+                        arr[i].Resources = arrResources;
+                    }
+
+                    this.objGlobal[region].RestApis = arr;
+                    resolve(`${region}-rAgwRGAs`);
+
                 });
             };
 
@@ -1170,35 +1218,34 @@ class AwsInventory {
 
 
             let rELBV2DLB = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    elbv2client.send(new DescribeLoadBalancersCommand({}))
-                        .then((data) => {
-                            let arrP = [];
-                            data.LoadBalancers.forEach((loadBalancer) => {
-                                arrP.push(rELBV2DLBA(loadBalancer)
-                                    .then((Attributes) => {
-                                        return new Promise((resolve) => {
+                    const pConfig = {
+                        client: elbv2client,
+                        pageSize: 25,
+                    };
 
-                                            loadBalancer.Attributes = Attributes;
+                    const cmdParams = {};
 
-                                            if (this.objGlobal[region].ApplicationLoadBalancers === undefined) {
-                                                this.objGlobal[region].ApplicationLoadBalancers = [];
-                                            }
+                    const paginator = paginateDescribeLoadBalancers(pConfig, cmdParams);
 
-                                            this.objGlobal[region].ApplicationLoadBalancers.push(loadBalancer);
-                                            resolve(`attributes added for ${loadBalancer.LoadBalancerName}`);
-                                        });
-                                    }));
-                            });
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rELBV2DLB`);
-                                });
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.LoadBalancers);
+                    }
+
+                    const arrLoadBalancers = [];
+
+                    for (let i = 0; i < arr.length; i++) {
+                        let loadBalancer = arr[i];
+                        let Attributes = await rELBV2DLBA(loadBalancer);
+                        loadBalancer.Attributes = Attributes;
+                        arrLoadBalancers.push(loadBalancer);
+                    }
+
+                    this.objGlobal[region].ApplicationLoadBalancers = arrLoadBalancers;
+                    resolve(`${region}-rELBV2DLB`);
                 });
             };
 
@@ -1222,33 +1269,33 @@ class AwsInventory {
 
 
             let rAcmLC = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    acmclient.send(new ListCertificatesCommand({}))
-                        .then((data) => {
-                            let arrP = [];
-                            data.CertificateSummaryList.forEach((cert) => {
-                                arrP.push(rAcmDC(cert)
-                                    .then((Certificate) => {
-                                        return new Promise((resolve) => {
+                    const pConfig = {
+                        client: acmclient,
+                        pageSize: 25,
+                    };
 
-                                            if (this.objGlobal[region].Certificates === undefined) {
-                                                this.objGlobal[region].Certificates = [];
-                                            }
+                    const cmdParams = {};
 
-                                            this.objGlobal[region].Certificates.push(Certificate);
-                                            resolve(`certificate described for ${cert.CertificateArn}`)
-                                        });
-                                    }));
-                            });
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rAcmLC`);
-                                });
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const paginator = paginateListCertificates(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.CertificateSummaryList);
+                    }
+
+                    const arrCertificates = []
+                    for (let i = 0; i < arr.length; i++) {
+                        let cert = arr[i];
+                        let Certificate = await rAcmDC(cert);
+                        arrCertificates.push(Certificate);
+                    }
+
+
+                    this.objGlobal[region].Certificates = arrCertificates;
+                    resolve(`${region}-rEc2DRT`);
                 });
             };
 
@@ -1295,38 +1342,36 @@ class AwsInventory {
 
 
             let rSqsLQ = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
 
-                    sqsclient.send(new ListQueuesCommand({}))
-                        .then((data) => {
-                            const arrP = [];
-                            const arrQueueUrls = data.QueueUrls;
-                            if (arrQueueUrls !== undefined) {
+                    const pConfig = {
+                        client: sqsclient,
+                        pageSize: 25,
+                    };
 
-                                arrQueueUrls.forEach((QueueUrl) => {
-                                    arrP.push(rSqsGQA(QueueUrl)
-                                        .then((Data) => {
-                                            return new Promise((resolve) => {
+                    const cmdParams = {};
 
-                                                if (this.objGlobal[region].Queues === undefined) {
-                                                    this.objGlobal[region].Queues = [];
-                                                }
+                    const paginator = paginateListQueues(pConfig, cmdParams);
 
-                                                this.objGlobal[region].Queues.push(Data);
-                                                resolve(`queue listed for ${QueueUrl}`)
-                                            });
-                                        }));
-                                });
+                    const arr = [];
 
-                            }
-                            Promise.all(arrP)
-                                .then(() => {
-                                    resolve(`rSqSLQ`);
-                                });
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    for await (const page of paginator) {
+                        if (page.QueueUrls !== undefined) {
+                            arr.push(...page.QueueUrls);
+                        }
+                    }
+
+                    const arrQueues = [];
+
+                    for (let i = 0; i < arr.length; i++) {
+                        let QueueUrl = arr[i];
+                        let Queue = await rSqsGQA(QueueUrl);
+                        Queue.Attributes.QueueUrl = QueueUrl;
+                        arrQueues.push(Queue);
+                    }
+
+                    this.objGlobal[region].Queues = arrQueues;
+                    resolve(`${region}-rSqsLQ`);
                 });
             };
 
