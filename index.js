@@ -332,7 +332,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: cfclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -355,7 +355,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: iamclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -378,7 +378,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: iamclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -401,7 +401,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: iamclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -424,7 +424,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: r53client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -450,7 +450,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: lambdaclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -473,10 +473,13 @@ class AwsInventory {
 
                     const pConfig = {
                         client: elcclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
-                    const cmdParams = {};
+                    const cmdParams = {
+                        ShowCacheNodeInfo: true,
+                        ShowCacheClustersNotInReplicationGroups: true,
+                    };
 
                     const paginator = paginateDescribeCacheClusters(pConfig, cmdParams);
 
@@ -496,7 +499,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: elcclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -519,7 +522,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: elcclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -542,7 +545,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: asgclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -565,7 +568,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: asgclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -606,7 +609,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ddbclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -638,7 +641,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: rdsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -661,7 +664,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: rdsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -684,7 +687,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: rdsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -707,7 +710,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: rdsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -730,7 +733,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: rdsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -777,7 +780,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ecsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {
@@ -830,7 +833,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ecsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -856,7 +859,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ecrclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -879,7 +882,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: cwclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -923,7 +926,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ec2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -946,7 +949,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ec2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -990,7 +993,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ec2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1013,7 +1016,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ec2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1056,7 +1059,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ecsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1087,7 +1090,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: ec2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1130,7 +1133,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: agwclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {
@@ -1173,7 +1176,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: agwclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1222,7 +1225,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: elbv2client,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1273,7 +1276,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: acmclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
@@ -1346,7 +1349,7 @@ class AwsInventory {
 
                     const pConfig = {
                         client: sqsclient,
-                        pageSize: 25,
+                        pageSize: 100,
                     };
 
                     const cmdParams = {};
