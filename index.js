@@ -116,7 +116,6 @@ const {
 
 const {
     EC2Client,
-    DescribeVpcsCommand,
     DescribeAvailabilityZonesCommand,
     paginateDescribeSecurityGroups,
     paginateDescribeVolumes,
@@ -139,6 +138,7 @@ class AwsInventory {
         this.credentials = config.credentials;
         this.regions = config.regions;
         this.services = config.services;
+        this.permissions = config.permissions;
     }
 
 
@@ -968,22 +968,23 @@ class AwsInventory {
 
 
             let rEc2DV = () => {
-                return new Promise((resolve, reject) => {
+                return new Promise(async (resolve, reject) => {
+                    const pConfig = {
+                        client: ec2client,
+                        pageSize: 100,
+                    };
 
-                    ec2client.send(new DescribeVpcsCommand({}))
-                        .then((data) => {
-                            data.Vpcs.forEach((vpc) => {
-                                if (this.objGlobal[region].Vpcs === undefined) {
-                                    this.objGlobal[region].Vpcs = [];
-                                }
+                    const cmdParams = {};
 
-                                this.objGlobal[region].Vpcs.push(vpc);
-                            });
-                            resolve(`rEc2DV`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
+                    const paginator = paginateDescribeVpcs(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    for await (const page of paginator) {
+                        arr.push(...page.Vpcs);
+                    }
+                    this.objGlobal[region].Vpcs = arr;
+                    resolve(`${region}-rEc2DV`);
                 });
             };
 
@@ -1154,7 +1155,7 @@ class AwsInventory {
                         if (Resource.Methods === undefined) {
                             Resource.Methods = [];
                         }
-                        const arrResourceMethods = [];
+                        let arrResourceMethods = [];
                         if (Resource.resourceMethods !== undefined) {
                             arrResourceMethods = Object.keys(Resource.resourceMethods);
                         }
@@ -1435,7 +1436,7 @@ class AwsInventory {
             let arrRegionRequests = [];
             services.forEach((svc) => {
                 switch (svc) {
-                    case 'cf':
+                    case 'cloudfront':
                         if (region === 'us-east-1') {
                             arrRegionRequests.push(requestSender(rCfLD));
                             arrRegionRequests.push(requestSender(rCfLCP));
@@ -1450,28 +1451,28 @@ class AwsInventory {
                         }
                         break;
 
-                    case 'r53':
+                    case 'route53':
                         if (region === 'us-east-1') {
                             arrRegionRequests.push(requestSender(rR53LHZ));
                         }
                         break;
 
-                    case 'lam':
+                    case 'lambda':
                         arrRegionRequests.push(requestSender(rLamLF));
                         break;
 
-                    case 'elc':
+                    case 'elasticache':
                         arrRegionRequests.push(requestSender(rElcDCC));
                         arrRegionRequests.push(requestSender(rElcDCSG));
                         arrRegionRequests.push(requestSender(rElcDRG));
                         break;
 
-                    case 'asg':
+                    case 'autoscaling':
                         arrRegionRequests.push(requestSender(rAsgDASG));
                         arrRegionRequests.push(requestSender(rAsgDLC));
                         break;
 
-                    case 'ddb':
+                    case 'dynamodb':
                         arrRegionRequests.push(requestSender(rDdbLT));
                         break;
 
@@ -1493,7 +1494,7 @@ class AwsInventory {
                         arrRegionRequests.push(requestSender(rEc2DAZ));
                         break;
 
-                    case 'cw':
+                    case 'cloudwatch':
                         arrRegionRequests.push(requestSender(rCwDA));
                         break;
 
@@ -1507,10 +1508,10 @@ class AwsInventory {
                         break;
 
                     case 's3':
-                        arrRegionRequests.push(requestSender(rS3LB));
+                        // arrRegionRequests.push(requestSender(rS3LB));
                         break;
 
-                    case 'elb':
+                    case 'elasticloadbalancing':
                         arrRegionRequests.push(requestSender(rELBV2DLB));
                         break;
 
@@ -1518,7 +1519,7 @@ class AwsInventory {
                         arrRegionRequests.push(requestSender(rAcmLC));
                         break;
 
-                    case 'agw':
+                    case 'apigateway':
                         arrRegionRequests.push(requestSender(rAgwGRAs));
                         break;
 
