@@ -46,6 +46,10 @@ const {
     paginateListPolicies,
     paginateListUsers,
     paginateListRoles,
+    paginateListUserPolicies,
+    GetUserPolicyCommand,
+    GetPolicyCommand,
+    GetPolicyVersionCommand,
 } = require('@aws-sdk/client-iam');
 
 const {
@@ -350,6 +354,80 @@ class AwsInventory {
             };
 
 
+            let rIamGUP = (user, policies) => {
+                return new Promise((resolve, reject) => {
+
+                    policies.forEach((policy) => {
+
+                        const oParams = {
+                            PolicyName: policy,
+                            UserName: user.UserName,
+                        };
+
+                        iamclient.send(new GetUserPolicyCommand(oParams))
+                            .then((data) => {
+                                if (this.objGlobal[region].PolicyDocuments === undefined) {
+                                    this.objGlobal[region].PolicyDocuments = [];
+                                }
+
+                                this.objGlobal[region].PolicyDocuments.push(
+                                    {
+                                        UserId: user.UserId,
+                                        Document: data.PolicyDocument,
+                                    }
+                                );
+                                // this.policyDocuments.push(data.PolicyDocument);
+                                resolve();
+
+
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+
+                    });
+                });
+            };
+
+            let rIamLUP = (users) => {
+                return new Promise((resolve, reject) => {
+
+                    const pConfig = {
+                        client: iamclient,
+                        pageSize: 100,
+                    };
+
+                    users.forEach(async (user) => {
+
+                        const UserName = user.UserName;
+                        const cmdParams = {
+                            UserName,
+                        };
+
+                        const paginator = paginateListUserPolicies(pConfig, cmdParams);
+
+                        const arr = [];
+
+                        for await (const page of paginator) {
+                            arr.push(...page.PolicyNames);
+                        }
+                        this.arrUserPolicies = arr;
+
+                        let arrPromises = [];
+                        if (arr.length > 0) {
+                            arrPromises.push(rIamGUP(user, arr));
+                        }
+
+                        Promise.all(arrPromises)
+                            .then(() => {
+                                resolve(`rIamLUP`);
+                            });
+
+                    });
+
+                });
+            };
+
             let rIamLU = () => {
                 return new Promise(async (resolve, reject) => {
 
@@ -368,8 +446,91 @@ class AwsInventory {
                         arr.push(...page.Users);
                     }
                     this.objGlobal[region].Users = arr;
-                    resolve(`${region}-rIamLU`);
+
+                    rIamLUP(arr)
+                        .then(() => {
+                            resolve(`${region}-rIamLU`);
+                        });
                 });
+            };
+
+
+            let rIamGPV = (policy) => {
+                return new Promise((resolve, reject) => {
+
+                    // console.log(policy);
+                    const PolicyArn = policy.Arn;
+                    const VersionId = policy.DefaultVersionId;
+                    const oParams = {
+                        PolicyArn,
+                        VersionId,
+                    };
+
+                    iamclient.send(new GetPolicyVersionCommand(oParams))
+                        .then((data) => {
+                            // console.log(data);
+                            if (this.objGlobal[region].PolicyDocuments === undefined) {
+                                this.objGlobal[region].PolicyDocuments = [];
+                            }
+
+                            this.objGlobal[region].PolicyDocuments.push(
+                                {
+                                    PolicyId: policy.PolicyId,
+                                    PolicyVersion: data.PolicyVersion,
+                                }
+                            );
+
+                            resolve();
+
+
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+
+                });
+            };
+
+
+            let rIamGP = (policies) => {
+                return new Promise((resolve, reject) => {
+
+                    policies.forEach((policy) => {
+
+                        // console.log(policy);
+                        const PolicyArn = policy.Arn;
+                        const oParams = {
+                            PolicyArn,
+                        };
+
+                        iamclient.send(new GetPolicyCommand(oParams))
+                            .then((data) => {
+                                // console.log(data);
+                                // if (this.objGlobal[region].PolicyDocuments === undefined) {
+                                //   this.objGlobal[region].PolicyDocuments = [];
+                                // }
+
+                                // this.objGlobal[region].PolicyDocuments.push(
+                                //   {
+                                //     UserName,
+                                //     Document: data.PolicyDocument,
+                                //   }
+                                // );
+
+                                rIamGPV(data.Policy)
+                                    .then(() => {
+                                        resolve();
+                                    });
+
+
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+
+                    });
+                });
+
             };
 
 
@@ -381,7 +542,9 @@ class AwsInventory {
                         pageSize: 100,
                     };
 
-                    const cmdParams = {};
+                    const cmdParams = {
+                        Scope: 'Local',
+                    };
 
                     const paginator = paginateListPolicies(pConfig, cmdParams);
 
@@ -390,8 +553,17 @@ class AwsInventory {
                     for await (const page of paginator) {
                         arr.push(...page.Policies);
                     }
+
                     this.objGlobal[region].Policies = arr;
-                    resolve(`${region}-rIamLP`);
+
+                    const arrPromises = [];
+
+                    arrPromises.push(rIamGP(arr));
+
+                    Promise.all(arrPromises)
+                        .then(() => {
+                            resolve(`${region}-rIamLP`);
+                        });
                 });
             };
 
