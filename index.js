@@ -5,22 +5,37 @@
 'use strict';
 
 
-const {
-    STSClient,
-    GetCallerIdentityCommand,
-} = require('@aws-sdk/client-sts');
+import {
+    route53_ListHostedZones
+} from "./services/route53";
 
-const {
-    SQSClient,
-    GetQueueAttributesCommand,
-    paginateListQueues,
-} = require('@aws-sdk/client-sqs');
+import {
+    acm_ListCertificates
+} from './services/acm';
 
-const {
-    ACMClient,
-    DescribeCertificateCommand,
-    paginateListCertificates,
-} = require('@aws-sdk/client-acm');
+import {
+    sqs_ListQueues
+} from './services/sqs';
+
+import {
+    ec2_DescribeVpcs,
+    ec2_DescribeAvailabilityZones,
+    ec2_DescribeSecurityGroups,
+    ec2_DescribeVolumes,
+    ec2_DescribeRouteTables,
+    ec2_DescribeSubnets,
+    ec2_DescribeInstances,
+} from './services/ec2';
+
+import {
+    iam_ListUsers,
+    iam_ListRoles,
+    iam_ListPolicies,
+} from './services/iam';
+
+import {
+    sts_GetCallerIdentity
+} from "./services/sts";
 
 const {
     ElasticLoadBalancingV2Client,
@@ -42,17 +57,6 @@ const {
 } = require('@aws-sdk/client-cloudfront');
 
 const {
-    IAMClient,
-    paginateListPolicies,
-    paginateListUsers,
-    paginateListRoles,
-    paginateListUserPolicies,
-    GetUserPolicyCommand,
-    GetPolicyCommand,
-    GetPolicyVersionCommand,
-} = require('@aws-sdk/client-iam');
-
-const {
     ElastiCacheClient,
     paginateDescribeCacheClusters,
     paginateDescribeReplicationGroups,
@@ -66,11 +70,6 @@ const {
 } = require('@aws-sdk/client-auto-scaling');
 
 const {
-    Route53Client,
-    paginateListHostedZones,
-} = require('@aws-sdk/client-route-53');
-
-const {
     DynamoDBClient,
     DescribeTableCommand,
     paginateListTables,
@@ -81,7 +80,7 @@ const {
     paginateDescribeAlarms,
 } = require('@aws-sdk/client-cloudwatch');
 
-const {
+import {
     ECSClient,
     DescribeClustersCommand,
     DescribeServicesCommand,
@@ -89,7 +88,7 @@ const {
     paginateListTaskDefinitions,
     paginateListClusters,
     paginateListServices,
-} = require('@aws-sdk/client-ecs');
+} from '@aws-sdk/client-ecs';
 
 const {
     ECRClient,
@@ -118,211 +117,65 @@ const {
     paginateGetRestApis,
 } = require('@aws-sdk/client-api-gateway');
 
-const {
-    EC2Client,
-    DescribeAvailabilityZonesCommand,
-    paginateDescribeSecurityGroups,
-    paginateDescribeVolumes,
-    paginateDescribeRouteTables,
-    paginateDescribeSubnets,
-    paginateDescribeVpcs,
-    paginateDescribeInstances,
-} = require('@aws-sdk/client-ec2');
-
-class AwsInventory {
-
-    // MAX_WAIT = 5000;
-    // objGlobal = {};
-    // credentials;
-    // regions;
-    // services;
-
+export class AwsInventory {
 
     constructor(config) {
         this.credentials = config.credentials;
-        this.regions = config.regions;
-        this.services = config.services;
-        this.permissions = config.permissions;
+        this.calls = config.calls;
     }
 
-
-    obtainAccountNumber() {
+    obtainAccountNumber(region) {
         return new Promise((resolve, reject) => {
 
-            let credentials = this.credentials;
-            let region = 'us-east-1';
-            const stsclient = new STSClient(
-                {
-                    region,
-                    credentials,
-                }
-            );
-
-
-            let rStsGCI = () => {
-                return new Promise((resolve, reject) => {
-
-                    stsclient.send(new GetCallerIdentityCommand({}))
-                        .then((data) => {
-                            this.objGlobal[region][`Account`] = data.Account;
-                            resolve(`rStsGCI`);
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
-                });
-            };
-
-            rStsGCI()
+            sts_GetCallerIdentity(region, this.credentials)
                 .then((p) => {
                     resolve(p);
+                })
+                .catch((e) => {
+                    reject(e);
                 });
         });
     }
 
 
-    run(region, services, credentials) {
-        return new Promise((resolve) => {
+    run(region, strService, apiCall) {
+        return new Promise((resolve, reject) => {
+
+            let credentials = this.credentials;
+
             if (this.objGlobal[region] === undefined) {
                 this.objGlobal[region] = {};
             }
 
-            const agwclient = new APIGatewayClient(
-                {
-                    region,
-                    credentials,
-                }
-            );
-
-            const acmclient = new ACMClient(
-                {
-                    region,
-                    credentials,
-                }
-            );
-
-            const elbv2client = new ElasticLoadBalancingV2Client(
-                {
-                    region,
-                    credentials,
-                }
-            );
-
-            const s3client = new S3Client(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const lambdaclient = new LambdaClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const cfclient = new CloudFrontClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const iamclient = new IAMClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const asgclient = new AutoScalingClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const elcclient = new ElastiCacheClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const r53client = new Route53Client(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const ec2client = new EC2Client(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const rdsclient = new RDSClient(
-                {
-                    region,
-                    credentials,
-                }
-            );
-
-            const ddbclient = new DynamoDBClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const cwclient = new CloudWatchClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const ecrclient = new ECRClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const ecsclient = new ECSClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-            const sqsclient = new SQSClient(
-                {
-                    region,
-                    credentials
-                }
-            );
-
-
-            /*
-            ONLY US-EAST-1
-             */
-            let rCfLCP = () => {
+            let cloudfront_ListCachePolicies = (region, credentials) => {
                 return new Promise((resolve, reject) => {
 
-                    cfclient.send(new ListCachePoliciesCommand({}))
+                    const client = new CloudFrontClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
+                    let obj = {
+                        [region]: {
+                            CachePolicies: []
+                        }
+                    };
+
+                    client.send(new ListCachePoliciesCommand({}))
                         .then((data) => {
                             data.CachePolicyList.Items.forEach((cachePolicy) => {
-                                if (this.objGlobal[region].CachePolicies === undefined) {
-                                    this.objGlobal[region].CachePolicies = [];
-                                }
+                                // if (this.objGlobal[region].CachePolicies === undefined) {
+                                //     this.objGlobal[region].CachePolicies = [];
+                                // }
+                                obj[region].CachePolicies.push(cachePolicy);
 
-                                this.objGlobal[region].CachePolicies.push(cachePolicy);
+                                // this.objGlobal[region].CachePolicies.push(cachePolicy);
                             });
-                            resolve(`rCfLCP`);
+                            // resolve(`${region}/cloudfront_ListCachePolicies`);
+
+                            resolve(obj);
                         })
                         .catch((e) => {
                             reject(e);
@@ -331,11 +184,18 @@ class AwsInventory {
             };
 
 
-            let rCfLD = () => {
+            let cloudfront_ListDistributions = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new CloudFrontClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: cfclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -345,283 +205,39 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.DistributionList.Items);
-                    }
-                    this.objGlobal[region].Distributions = arr;
-                    resolve(`${region}-rCfLD`);
-                });
-            };
-
-
-            let rIamGUP = (user, policies) => {
-                return new Promise((resolve, reject) => {
-
-                    policies.forEach((policy) => {
-
-                        const oParams = {
-                            PolicyName: policy,
-                            UserName: user.UserName,
-                        };
-
-                        iamclient.send(new GetUserPolicyCommand(oParams))
-                            .then((data) => {
-                                if (this.objGlobal[region].PolicyDocuments === undefined) {
-                                    this.objGlobal[region].PolicyDocuments = [];
-                                }
-
-                                this.objGlobal[region].PolicyDocuments.push(
-                                    {
-                                        UserId: user.UserId,
-                                        Document: data.PolicyDocument,
-                                    }
-                                );
-                                // this.policyDocuments.push(data.PolicyDocument);
-                                resolve();
-
-
-                            })
-                            .catch((e) => {
-                                reject(e);
-                            });
-
-                    });
-                });
-            };
-
-            let rIamLUP = (users) => {
-                return new Promise((resolve, reject) => {
-
-                    const pConfig = {
-                        client: iamclient,
-                        pageSize: 100,
-                    };
-
-                    users.forEach(async (user) => {
-
-                        const UserName = user.UserName;
-                        const cmdParams = {
-                            UserName,
-                        };
-
-                        const paginator = paginateListUserPolicies(pConfig, cmdParams);
-
-                        const arr = [];
+                    try {
 
                         for await (const page of paginator) {
-                            arr.push(...page.PolicyNames);
+                            arr.push(...page.DistributionList.Items);
                         }
-                        this.arrUserPolicies = arr;
+                    } catch (e) {
+                        reject(e);
+                    }
+                    // this.objGlobal[region].Distributions = arr;
+                    // resolve(`${region}/cloudfront_ListDistributions`);
 
-                        let arrPromises = [];
-                        if (arr.length > 0) {
-                            arrPromises.push(rIamGUP(user, arr));
+                    let objGlobal = {
+                        [region]: {
+                            Distributions: arr
                         }
-
-                        Promise.all(arrPromises)
-                            .then(() => {
-                                resolve(`rIamLUP`);
-                            });
-
-                    });
-
+                    };
+                    resolve(objGlobal);
                 });
             };
 
-            let rIamLU = () => {
+
+            let lambda_ListFunctions = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
-                    const pConfig = {
-                        client: iamclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateListUsers(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Users);
-                    }
-                    this.objGlobal[region].Users = arr;
-
-                    rIamLUP(arr)
-                        .then(() => {
-                            resolve(`${region}-rIamLU`);
-                        });
-                });
-            };
-
-
-            let rIamGPV = (policy) => {
-                return new Promise((resolve, reject) => {
-
-                    // console.log(policy);
-                    const PolicyArn = policy.Arn;
-                    const VersionId = policy.DefaultVersionId;
-                    const oParams = {
-                        PolicyArn,
-                        VersionId,
-                    };
-
-                    iamclient.send(new GetPolicyVersionCommand(oParams))
-                        .then((data) => {
-                            // console.log(data);
-                            if (this.objGlobal[region].PolicyDocuments === undefined) {
-                                this.objGlobal[region].PolicyDocuments = [];
-                            }
-
-                            this.objGlobal[region].PolicyDocuments.push(
-                                {
-                                    PolicyId: policy.PolicyId,
-                                    PolicyVersion: data.PolicyVersion,
-                                }
-                            );
-
-                            resolve();
-
-
-                        })
-                        .catch((e) => {
-                            reject(e);
-                        });
-
-                });
-            };
-
-
-            let rIamGP = (policies) => {
-                return new Promise((resolve, reject) => {
-
-                    policies.forEach((policy) => {
-
-                        // console.log(policy);
-                        const PolicyArn = policy.Arn;
-                        const oParams = {
-                            PolicyArn,
-                        };
-
-                        iamclient.send(new GetPolicyCommand(oParams))
-                            .then((data) => {
-                                // console.log(data);
-                                // if (this.objGlobal[region].PolicyDocuments === undefined) {
-                                //   this.objGlobal[region].PolicyDocuments = [];
-                                // }
-
-                                // this.objGlobal[region].PolicyDocuments.push(
-                                //   {
-                                //     UserName,
-                                //     Document: data.PolicyDocument,
-                                //   }
-                                // );
-
-                                rIamGPV(data.Policy)
-                                    .then(() => {
-                                        resolve();
-                                    });
-
-
-                            })
-                            .catch((e) => {
-                                reject(e);
-                            });
-
-                    });
-                });
-
-            };
-
-
-            let rIamLP = () => {
-                return new Promise(async (resolve, reject) => {
+                    const client = new LambdaClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
 
                     const pConfig = {
-                        client: iamclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {
-                        Scope: 'Local',
-                    };
-
-                    const paginator = paginateListPolicies(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Policies);
-                    }
-
-                    this.objGlobal[region].Policies = arr;
-
-                    const arrPromises = [];
-
-                    arrPromises.push(rIamGP(arr));
-
-                    Promise.all(arrPromises)
-                        .then(() => {
-                            resolve(`${region}-rIamLP`);
-                        });
-                });
-            };
-
-
-            let rIamLR = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: iamclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateListRoles(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Roles);
-                    }
-                    this.objGlobal[region].Roles = arr;
-                    resolve(`${region}-rIamLR`);
-                });
-            };
-
-
-            let rR53LHZ = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: r53client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateListHostedZones(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.HostedZones);
-                    }
-                    this.objGlobal[region].HostedZones = arr;
-                    resolve(`${region}-rR53LHZ`);
-                });
-            };
-
-
-            /*
-            ALL REGIONS
-             */
-            let rLamLF = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: lambdaclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -631,20 +247,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.Functions);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.Functions);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].Functions = arr;
-                    resolve(`${region}-rLamLF`);
+
+                    // this.objGlobal[region].Functions = arr;
+                    // resolve(`${region}/lambda_ListFunctions`);
+                    let obj = {
+                        [region]: {
+                            Functions: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rElcDCC = () => {
+            let elasticache_DescribeCacheClusters = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ElastiCacheClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: elcclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -657,20 +293,39 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.CacheClusters);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.CacheClusters);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].CacheClusters = arr;
-                    resolve(`${region}-rElcDCC`);
+
+                    // this.objGlobal[region].CacheClusters = arr;
+                    // resolve(`${region}/elasticache_DescribeCacheClusters`);
+                    let objGlobal = {
+                        [region]: {
+                            CacheClusters: arr
+                        }
+                    };
+                    resolve(objGlobal);
                 });
             };
 
 
-            let rElcDCSG = () => {
+            let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ElastiCacheClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: elcclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -680,20 +335,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.CacheSubnetGroups);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.CacheSubnetGroups);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].CacheSubnetGroups = arr;
-                    resolve(`${region}-rElcDCSG`);
+
+                    // this.objGlobal[region].CacheSubnetGroups = arr;
+                    // resolve(`${region}/elasticache_DescribeCacheSubnetGroups`);
+                    let objGlobal = {
+                        [region]: {
+                            CacheSubnetGroups: arr
+                        }
+                    };
+                    resolve(objGlobal);
                 });
             };
 
 
-            let rElcDRG = () => {
+            let elasticache_DescribeReplicationGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ElastiCacheClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: elcclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -703,20 +378,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.ReplicationGroups);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.ReplicationGroups);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].ReplicationGroups = arr;
-                    resolve(`${region}-rElcDRG`);
+
+                    // this.objGlobal[region].ReplicationGroups = arr;
+                    // resolve(`${region}/elasticache_DescribeReplicationGroups`);
+                    let objGlobal = {
+                        [region]: {
+                            ReplicationGroups: arr
+                        }
+                    };
+                    resolve(objGlobal);
                 });
             };
 
 
-            let rAsgDASG = () => {
+            let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new AutoScalingClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: asgclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -726,20 +421,39 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.AutoScalingGroups);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.AutoScalingGroups);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].AutoScalingGroups = arr;
-                    resolve(`${region}-rAsgDASG`);
+
+                    // this.objGlobal[region].AutoScalingGroups = arr;
+                    // resolve(`${region}/autoscaling_DescribeAutoScalingGroups`);
+                    let obj = {
+                        [region]: {
+                            AutoScalingGroups: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rAsgDLC = () => {
+            let autoscaling_DescribeLaunchConfigurations = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new AutoScalingClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: asgclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -749,19 +463,32 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.LaunchConfigurations);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.LaunchConfigurations);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].LaunchConfigurations = arr;
-                    resolve(`${region}-rAsgDLC`);
+
+                    // this.objGlobal[region].LaunchConfigurations = arr;
+                    // resolve(`${region}/autoscaling_DescribeLaunchConfigurations`);
+                    let obj = {
+                        [region]: {
+                            LaunchConfigurations: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rDdbDT = (TableName) => {
+            let dynamodb_DescribeTable = (TableName, client) => {
                 return new Promise((resolve, reject) => {
 
-                    ddbclient.send(new DescribeTableCommand(
+                    client.send(new DescribeTableCommand(
                         {
                             TableName
                         }
@@ -776,11 +503,18 @@ class AwsInventory {
             };
 
 
-            let rDdbLT = () => {
+            let dynamodb_ListTables = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new DynamoDBClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: ddbclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -790,29 +524,47 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.TableNames);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.TableNames);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     const Tables = [];
 
                     for (let i = 0; i < arr.length; i++) {
                         let TableName = arr[i];
-                        let Table = await rDdbDT(TableName);
+                        let Table = await dynamodb_DescribeTable(TableName, client);
                         Tables.push(Table);
                     }
 
-                    this.objGlobal[region].Tables = Tables;
-                    resolve(`${region}-rDdbLT`);
+                    // this.objGlobal[region].Tables = Tables;
+                    // resolve(`${region}/dynamodb_ListTables`);
+                    let obj = {
+                        [region]: {
+                            Tables: Tables
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rRdsDSG = () => {
+            let rds_DescribeDBSubnetGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new RDSClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: rdsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -822,20 +574,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.DBSubnetGroups);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.DBSubnetGroups);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].DBSubnetGroups = arr;
-                    resolve(`${region}-rRdsDSG`);
+
+                    // this.objGlobal[region].DBSubnetGroups = arr;
+                    // resolve(`${region}/rds_DescribeDBSubnetGroups`);
+                    let objGlobal = {
+                        [region]: {
+                            DBSubnetGroups: arr
+                        }
+                    };
+                    resolve(objGlobal);
                 });
             };
 
 
-            let rRdsDPG = () => {
+            let rds_DescribeDBParameterGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new RDSClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: rdsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -845,20 +617,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.DBParameterGroups);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.DBParameterGroups);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].ParameterGroups = arr;
-                    resolve(`${region}-rRdsDPG`);
+
+                    // this.objGlobal[region].ParameterGroups = arr;
+                    // resolve(`${region}/rds_DescribeDBParameterGroups`);
+                    let objGlobal = {
+                        [region]: {
+                            ParameterGroups: arr
+                        }
+                    };
+                    resolve(objGlobal);
                 });
             };
 
 
-            let rRdsDOG = () => {
+            let rds_DescribeOptionGroups = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new RDSClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: rdsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -868,20 +660,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.OptionGroupsList);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.OptionGroupsList);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].OptionGroups = arr;
-                    resolve(`${region}-rRdsDOG`);
+
+                    // this.objGlobal[region].OptionGroups = arr;
+                    // resolve(`${region}/rds_DescribeOptionGroups`);
+                    let obj = {
+                        [region]: {
+                            OptionGroups: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rRdsDC = () => {
+            let rds_DescribeDBClusters = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new RDSClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: rdsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -891,20 +703,40 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.DBClusters);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.DBClusters);
+                        }
+
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].DBClusters = arr;
-                    resolve(`${region}-rRdsDC`);
+
+                    // this.objGlobal[region].DBClusters = arr;
+                    // resolve(`${region}/rds_DescribeDBClusters`);
+                    let obj = {
+                        [region]: {
+                            DBClusters: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rRdsDI = () => {
+            let rds_DescribeDBInstances = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new RDSClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: rdsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -914,31 +746,51 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.DBInstances);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.DBInstances);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].DBInstances = arr;
-                    resolve(`${region}-rRdsDI`);
+
+                    // this.objGlobal[region].DBInstances = arr;
+                    // resolve(`${region}/rds_DescribeDBInstances`);
+                    let obj = {
+                        [region]: {
+                            DBInstances: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rEcsDS = (cluster, services) => {
+            let ecs_DescribeServices = (cluster, services, client) => {
                 return new Promise((resolve, reject) => {
 
-                    ecsclient.send(new DescribeServicesCommand({
+                    let obj = {
+                        [region]: {
+                            ECSServices: []
+                        }
+                    };
+                    client.send(new DescribeServicesCommand({
                         cluster,
                         services
                     }))
                         .then((data) => {
                             data.services.forEach((service) => {
-                                if (this.objGlobal[region].ECSServices === undefined) {
-                                    this.objGlobal[region].ECSServices = [];
-                                }
+                                // if (this.objGlobal[region].ECSServices === undefined) {
+                                //     this.objGlobal[region].ECSServices = [];
+                                // }
+                                //
+                                // this.objGlobal[region].ECSServices.push(service);
+                                obj[region].ECSServices.push(service);
 
-                                this.objGlobal[region].ECSServices.push(service);
                             });
-                            resolve(`rEcsDS`);
+                            // resolve(`${region}/ecs_DescribeServices`);
+                            resolve(obj);
                         })
                         .catch((e) => {
                             reject(e);
@@ -947,11 +799,11 @@ class AwsInventory {
             };
 
 
-            let rEcsLS = (cluster) => {
+            let ecs_ListServices = (cluster, client) => {
                 return new Promise(async (resolve, reject) => {
 
                     const pConfig = {
-                        client: ecsclient,
+                        client: client,
                         pageSize: 100,
                     };
 
@@ -963,35 +815,42 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.serviceArns);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.serviceArns);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     for (let i = 0; i < arr.length; i++) {
                         let serviceArn = arr[i];
-                        await rEcsDS(cluster.clusterArn, serviceArn);
+                        await ecs_DescribeServices(cluster.clusterArn, serviceArn);
                     }
-                    resolve(`${region}-rEcsLS`);
+                    resolve(`${region}/ecs_ListServices`);
                 });
             };
 
 
-            let rEcsDC = (clusters) => {
+            let ecs_DescribeClusters = (clusters, client) => {
                 return new Promise((resolve, reject) => {
 
-                    ecsclient.send(new DescribeClustersCommand({
+                    client.send(new DescribeClustersCommand({
                         clusters
                     }))
                         .then((data) => {
                             data.clusters.forEach((cluster) => {
-                                rEcsLS(cluster);
+                                ecs_ListServices(cluster);
                                 if (this.objGlobal[region].ECSClusters === undefined) {
                                     this.objGlobal[region].ECSClusters = [];
                                 }
 
                                 this.objGlobal[region].ECSClusters.push(cluster);
                             });
-                            resolve(`rEcsDC`);
+                            // resolve(`${region}/ecs_DescribeClusters`);
+                            resolve(`${region}/ecs_DescribeClusters`);
+                            resolve(obj);
                         })
                         .catch((e) => {
                             reject(e);
@@ -1000,11 +859,19 @@ class AwsInventory {
             };
 
 
-            let rEcsLC = () => {
+            let ecs_ListClusters = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ECSClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
+                    let arrP = [];
                     const pConfig = {
-                        client: ecsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -1014,205 +881,41 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.clusterArns);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.clusterArns);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     for (let i = 0; i < arr.length; i++) {
-                        rEcsDC(arr[i].clusterArns)
+                        arrP.push(ecs_DescribeClusters(arr[i].clusterArns), client);
                     }
-                    resolve(`${region}-rEcsLC`);
-                });
-            };
 
-
-            let rEcrDR = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: ecrclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeRepositories(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.repositories);
-                    }
-                    this.objGlobal[region].ECRRepositories = arr;
-                    resolve(`${region}-rEcrDR`);
-                });
-            };
-
-
-            let rCwDA = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: cwclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeAlarms(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.MetricAlarms);
-                    }
-                    this.objGlobal[region].MetricAlarms = arr;
-                    resolve(`${region}-rCwDA`);
-                });
-            };
-
-
-            let rEc2DAZ = () => {
-                return new Promise((resolve, reject) => {
-
-                    ec2client.send(new DescribeAvailabilityZonesCommand({}))
-                        .then((data) => {
-                            data.AvailabilityZones.forEach((AvailabilityZone) => {
-                                if (this.objGlobal[region].AvailabilityZones === undefined) {
-                                    this.objGlobal[region].AvailabilityZones = [];
+                    Promise.all(arrP)
+                        .then((aP) => {
+                            let arr = [];
+                            for (let i = 0; i < aP.length; i++) {
+                                arr.push()
+                            }
+                            // resolve(`${region}/ecs_ListClusters`);
+                            let obj = {
+                                [region]: {
+                                    ECSClusters: arr
                                 }
-
-                                this.objGlobal[region].AvailabilityZones.push(AvailabilityZone);
-                            });
-                            resolve(`rEc2DAZ`);
-                        })
-                        .catch((e) => {
-                            reject(e);
+                            };
+                            resolve(obj);
                         });
                 });
             };
 
 
-            let rEc2DRT = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: ec2client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeRouteTables(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.RouteTables);
-                    }
-                    this.objGlobal[region].RouteTables = arr;
-                    resolve(`${region}-rEc2DRT`);
-                });
-            };
-
-
-            let rEc2DVo = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: ec2client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeVolumes(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Volumes);
-                    }
-                    this.objGlobal[region].Volumes = arr;
-                    resolve(`${region}-rEc2DVo`);
-                });
-            };
-
-
-            let rEc2DV = () => {
-                return new Promise(async (resolve, reject) => {
-                    const pConfig = {
-                        client: ec2client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeVpcs(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Vpcs);
-                    }
-                    this.objGlobal[region].Vpcs = arr;
-                    resolve(`${region}-rEc2DV`);
-                });
-            };
-
-
-            let rEc2DS = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: ec2client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeSubnets(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.Subnets);
-                    }
-                    this.objGlobal[region].Subnets = arr;
-                    resolve(`${region}-rEc2DS`);
-                });
-            };
-
-
-            let rEc2DI = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: ec2client,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateDescribeInstances(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        page.Reservations.forEach((reservation) => {
-                            arr.push(...reservation.Instances)
-                        });
-                    }
-                    this.objGlobal[region].Ec2Instances = arr;
-                    resolve(`${region}-rEc2DI`);
-                });
-            };
-
-
-            let rEcsDTD = (taskDefinitionArn) => {
+            let ecs_DescribeTaskDefinition = (taskDefinitionArn, client) => {
                 return new Promise((resolve, reject) => {
 
-                    ecsclient.send(new DescribeTaskDefinitionCommand(
+                    client.send(new DescribeTaskDefinitionCommand(
                         {
                             taskDefinition: taskDefinitionArn,
                         }
@@ -1227,11 +930,18 @@ class AwsInventory {
             };
 
 
-            let rEcsLTD = () => {
+            let ecs_ListTaskDefinitions = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ECSClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: ecsclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -1241,50 +951,315 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.taskDefinitionArns);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.taskDefinitionArns);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     const arrTaskDefinitions = []
                     for (let i = 0; i < arr.length; i++) {
                         let taskDefArn = arr[i];
-                        let taskDefinition = await rEcsDTD(taskDefArn);
+                        let taskDefinition = await ecs_DescribeTaskDefinition(taskDefArn);
                         arrTaskDefinitions.push(taskDefinition);
                     }
 
                     this.objGlobal[region].TaskDefinitions = arrTaskDefinitions;
-                    resolve(`${region}-rEcsLTD`);
+                    resolve(`${region}/ecs_ListTaskDefinitions`);
                 });
             };
 
 
-            let rEc2DSG = () => {
+            let ecr_DescribeRepositories = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ECRClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
                     const pConfig = {
-                        client: ec2client,
+                        client,
                         pageSize: 100,
                     };
 
                     const cmdParams = {};
 
-                    const paginator = paginateDescribeSecurityGroups(pConfig, cmdParams);
+                    const paginator = paginateDescribeRepositories(pConfig, cmdParams);
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.SecurityGroups)
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.repositories);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
-                    this.objGlobal[region].SecurityGroups = arr;
-                    resolve(`${region}-rEc2DSG`);
+                    // this.objGlobal[region].ECRRepositories = arr;
+                    // resolve(`${region}/ecr_DescribeRepositories`);
+                    let obj = {
+                        [region]: {
+                            ECRRepositories: arr
+                        }
+                    };
+                    resolve(obj);
                 });
             };
 
 
-            let rAgwGM = (httpMethod, resourceId, restApiId) => {
+            let cloudwatch_DescribeAlarms = (region, credentials) => {
+                return new Promise(async (resolve, reject) => {
+
+                    const client = new CloudWatchClient(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
+                    const pConfig = {
+                        client,
+                        pageSize: 100,
+                    };
+
+                    const cmdParams = {};
+
+                    const paginator = paginateDescribeAlarms(pConfig, cmdParams);
+
+                    const arr = [];
+
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.MetricAlarms);
+                        }
+
+                    } catch (e) {
+                        reject(e);
+                    }
+
+                    // this.objGlobal[region].MetricAlarms = arr;
+                    // resolve(`${region}/cloudwatch_DescribeAlarms`);
+                    let obj = {
+                        [region]: {
+                            MetricAlarms: arr
+                        }
+                    };
+                    resolve(obj);
+                });
+            };
+
+
+            // let ec2_DescribeAvailabilityZones = () => {
+            //     return new Promise((resolve, reject) => {
+            //
+            //         ec2client.send(new DescribeAvailabilityZonesCommand({}))
+            //             .then((data) => {
+            //                 data.AvailabilityZones.forEach((AvailabilityZone) => {
+            //                     if (this.objGlobal[region].AvailabilityZones === undefined) {
+            //                         this.objGlobal[region].AvailabilityZones = [];
+            //                     }
+            //
+            //                     this.objGlobal[region].AvailabilityZones.push(AvailabilityZone);
+            //                 });
+            //                 resolve(`${region}/ec2_DescribeAvailabilityZones`);
+            //             })
+            //             .catch((e) => {
+            //                 reject(e);
+            //             });
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeRouteTables = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeRouteTables(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.RouteTables);
+            //             }
+            //
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //
+            //
+            //         this.objGlobal[region].RouteTables = arr;
+            //         resolve(`${region}/ec2_DescribeRouteTables`);
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeVolumes = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeVolumes(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.Volumes);
+            //             }
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //         this.objGlobal[region].Volumes = arr;
+            //         resolve(`${region}/ec2_DescribeVolumes`);
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeVpcs = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeVpcs(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.Vpcs);
+            //             }
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //         this.objGlobal[region].Vpcs = arr;
+            //         resolve(`${region}/ec2_DescribeVpcs`);
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeSubnets = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeSubnets(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.Subnets);
+            //             }
+            //
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //
+            //
+            //         this.objGlobal[region].Subnets = arr;
+            //         resolve(`${region}/ec2_DescribeSubnets`);
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeInstances = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeInstances(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 page.Reservations.forEach((reservation) => {
+            //                     arr.push(...reservation.Instances)
+            //                 });
+            //             }
+            //
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //
+            //
+            //         this.objGlobal[region].Instances = arr;
+            //         resolve(`${region}/ec2_DescribeInstances`);
+            //     });
+            // };
+            //
+            //
+            // let ec2_DescribeSecurityGroups = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: ec2client,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateDescribeSecurityGroups(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.SecurityGroups)
+            //             }
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //         this.objGlobal[region].SecurityGroups = arr;
+            //         resolve(`${region}/ec2_DescribeSecurityGroups`);
+            //     });
+            // };
+
+
+            let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
                 return new Promise((resolve, reject) => {
 
-                    agwclient.send(new GetMethodCommand(
+                    client.send(new GetMethodCommand(
                         {
                             httpMethod,
                             resourceId,
@@ -1301,11 +1276,11 @@ class AwsInventory {
             };
 
 
-            let rAgwGR = (restApiId) => {
+            let apigateway_GetResources = (restApiId, client) => {
                 return new Promise(async (resolve, reject) => {
 
                     const pConfig = {
-                        client: agwclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -1317,8 +1292,13 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(page.items);
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(page.items);
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     const arrResources = [];
@@ -1333,7 +1313,7 @@ class AwsInventory {
                         }
                         for (let j = 0; j < arrResourceMethods.length; j++) {
                             let METHOD = arrResourceMethods[j];
-                            let oMethod = await rAgwGM(METHOD, Resource.id, restApiId);
+                            let oMethod = await apigateway_GetMethod(METHOD, Resource.id, restApiId, client);
                             Resource.Methods.push(oMethod);
                         }
                         arrResources.push(Resource);
@@ -1344,11 +1324,18 @@ class AwsInventory {
             };
 
 
-            let rAgwGRAs = () => {
+            let apigateway_GetRestApis = (region, credentials) => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new APIGatewayClient(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: agwclient,
+                        client,
                         pageSize: 100,
                     };
 
@@ -1358,13 +1345,18 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.items)
+                    try {
+
+                        for await (const page of paginator) {
+                            arr.push(...page.items)
+                        }
+                    } catch (e) {
+                        reject(e);
                     }
 
                     for (let i = 0; i < arr.length; i++) {
                         let RestApi = arr[i];
-                        const arrResources = await rAgwGR(RestApi.id);
+                        const arrResources = await apigateway_GetResources(RestApi.id, client);
                         arr[i].Resources = arrResources;
                     }
 
@@ -1375,10 +1367,10 @@ class AwsInventory {
             };
 
 
-            let rELBV2DLBA = (loadbalancer) => {
+            let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client) => {
                 return new Promise((resolve, reject) => {
 
-                    elbv2client.send(new DescribeLoadBalancerAttributesCommand(
+                    client.send(new DescribeLoadBalancerAttributesCommand(
                         {
                             LoadBalancerArn: loadbalancer.LoadBalancerArn,
                         }
@@ -1393,11 +1385,18 @@ class AwsInventory {
             };
 
 
-            let rELBV2DLB = () => {
+            let elasticloadbalancing_DescribeLoadBalancers = () => {
                 return new Promise(async (resolve, reject) => {
 
+                    const client = new ElasticLoadBalancingV2Client(
+                        {
+                            region,
+                            credentials,
+                        }
+                    );
+
                     const pConfig = {
-                        client: elbv2client,
+                        client,
                         pageSize: 100,
                     };
 
@@ -1407,79 +1406,101 @@ class AwsInventory {
 
                     const arr = [];
 
-                    for await (const page of paginator) {
-                        arr.push(...page.LoadBalancers);
-                    }
+                    try {
 
+                        for await (const page of paginator) {
+                            arr.push(...page.LoadBalancers);
+                        }
+                    } catch (e) {
+                        reject(e);
+                    }
                     const arrLoadBalancers = [];
 
                     for (let i = 0; i < arr.length; i++) {
                         let loadBalancer = arr[i];
-                        let Attributes = await rELBV2DLBA(loadBalancer);
+                        let Attributes = await elasticloadbalancing_DescribeLoadBalancerAttributes(loadBalancer, client);
                         loadBalancer.Attributes = Attributes;
                         arrLoadBalancers.push(loadBalancer);
                     }
 
-                    this.objGlobal[region].ApplicationLoadBalancers = arrLoadBalancers;
-                    resolve(`${region}-rELBV2DLB`);
-                });
-            };
-
-
-            let rAcmDC = (cert) => {
-                return new Promise((resolve, reject) => {
-
-                    acmclient.send(new DescribeCertificateCommand(
-                        {
-                            CertificateArn: cert.CertificateArn,
+                    // this.objGlobal[region].ApplicationLoadBalancers = arrLoadBalancers;
+                    // resolve(`${region}/elasticloadbalancing_DescribeLoadBalancers`);
+                    let obj = {
+                        [region]: {
+                            ApplicationLoadBalancers: arrLoadBalancers
                         }
-                    ))
-                        .then((data) => {
-                            resolve(data.Certificate);
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
-                });
-            };
-
-
-            let rAcmLC = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: acmclient,
-                        pageSize: 100,
                     };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateListCertificates(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        arr.push(...page.CertificateSummaryList);
-                    }
-
-                    const arrCertificates = []
-                    for (let i = 0; i < arr.length; i++) {
-                        let cert = arr[i];
-                        let Certificate = await rAcmDC(cert);
-                        arrCertificates.push(Certificate);
-                    }
-
-
-                    this.objGlobal[region].Certificates = arrCertificates;
-                    resolve(`${region}-rEc2DRT`);
+                    resolve(obj);
                 });
             };
 
 
-            let rS3LB = () => {
+            // let acm_DescribeCertificate = (cert) => {
+            //     return new Promise((resolve, reject) => {
+            //
+            //         acmclient.send(new DescribeCertificateCommand(
+            //             {
+            //                 CertificateArn: cert.CertificateArn,
+            //             }
+            //         ))
+            //             .then((data) => {
+            //                 resolve(data.Certificate);
+            //             })
+            //             .catch((err) => {
+            //                 reject(err);
+            //             });
+            //     });
+            // };
+            //
+            //
+            // let acm_ListCertificates = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: acmclient,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateListCertificates(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 arr.push(...page.CertificateSummaryList);
+            //             }
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //
+            //         const arrCertificates = []
+            //         for (let i = 0; i < arr.length; i++) {
+            //             let cert = arr[i];
+            //             let Certificate = await acm_DescribeCertificate(cert);
+            //             arrCertificates.push(Certificate);
+            //         }
+            //
+            //
+            //         this.objGlobal[region].Certificates = arrCertificates;
+            //         resolve(`${region}/acm_ListCertificates`);
+            //     });
+            // };
+
+
+            let s3_ListAllMyBuckets = (region, credentials) => {
                 return new Promise((resolve, reject) => {
 
-                    s3client.send(new ListBucketsCommand({}))
+                    const client = new S3Client(
+                        {
+                            region,
+                            credentials
+                        }
+                    );
+
+                    client.send(new ListBucketsCommand({}))
                         .then((data) => {
                             data.Buckets.forEach((bucket) => {
                                 if (this.objGlobal[region].Buckets === undefined) {
@@ -1488,7 +1509,7 @@ class AwsInventory {
 
                                 this.objGlobal[region].Buckets.push(bucket);
                             });
-                            resolve(`rS3LB`);
+                            resolve(`${region}/s3_ListAllMyBuckets`);
                         })
                         .catch((err) => {
                             reject(err);
@@ -1497,59 +1518,65 @@ class AwsInventory {
             };
 
 
-            let rSqsGQA = (QueueUrl) => {
-                return new Promise((resolve, reject) => {
-                    sqsclient.send(new GetQueueAttributesCommand(
-                        {
-                            AttributeNames: [
-                                'All'
-                            ],
-                            QueueUrl,
-                        }
-                    ))
-                        .then((data) => {
-                            resolve(data);
-                        })
-                        .catch((err) => {
-                            reject(err);
-                        });
-                });
-            };
-
-
-            let rSqsLQ = () => {
-                return new Promise(async (resolve, reject) => {
-
-                    const pConfig = {
-                        client: sqsclient,
-                        pageSize: 100,
-                    };
-
-                    const cmdParams = {};
-
-                    const paginator = paginateListQueues(pConfig, cmdParams);
-
-                    const arr = [];
-
-                    for await (const page of paginator) {
-                        if (page.QueueUrls !== undefined) {
-                            arr.push(...page.QueueUrls);
-                        }
-                    }
-
-                    const arrQueues = [];
-
-                    for (let i = 0; i < arr.length; i++) {
-                        let QueueUrl = arr[i];
-                        let Queue = await rSqsGQA(QueueUrl);
-                        Queue.Attributes.QueueUrl = QueueUrl;
-                        arrQueues.push(Queue);
-                    }
-
-                    this.objGlobal[region].Queues = arrQueues;
-                    resolve(`${region}-rSqsLQ`);
-                });
-            };
+            // let sqs_GetQueueAttributes = (QueueUrl) => {
+            //     return new Promise((resolve, reject) => {
+            //         sqsclient.send(new GetQueueAttributesCommand(
+            //             {
+            //                 AttributeNames: [
+            //                     'All'
+            //                 ],
+            //                 QueueUrl,
+            //             }
+            //         ))
+            //             .then((data) => {
+            //                 resolve(data);
+            //             })
+            //             .catch((err) => {
+            //                 reject(err);
+            //             });
+            //     });
+            // };
+            //
+            //
+            // let sqs_ListQueues = () => {
+            //     return new Promise(async (resolve, reject) => {
+            //
+            //         const pConfig = {
+            //             client: sqsclient,
+            //             pageSize: 100,
+            //         };
+            //
+            //         const cmdParams = {};
+            //
+            //         const paginator = paginateListQueues(pConfig, cmdParams);
+            //
+            //         const arr = [];
+            //
+            //         try {
+            //
+            //             for await (const page of paginator) {
+            //                 if (page.QueueUrls !== undefined) {
+            //                     arr.push(...page.QueueUrls);
+            //                 }
+            //             }
+            //
+            //         } catch (e) {
+            //             reject(e);
+            //         }
+            //
+            //         const arrQueues = [];
+            //
+            //         for (let i = 0; i < arr.length; i++) {
+            //             let QueueUrl = arr[i];
+            //             let Queue = await sqs_GetQueueAttributes(QueueUrl);
+            //             Queue.Attributes.QueueUrl = QueueUrl;
+            //             arrQueues.push(Queue);
+            //         }
+            //
+            //         this.objGlobal[region].Queues = arrQueues;
+            //         resolve(`${region}/sqs_ListQueues`);
+            //     });
+            // };
 
 
             const RETRIES = 2;
@@ -1558,7 +1585,6 @@ class AwsInventory {
                     if (retry === undefined) {
                         retry = 0;
                     }
-                    // console.log(`Attempt ${retry + 1} for ${fName.name} for region ${region}`);
 
 
                     let fRand = Math.random();
@@ -1566,149 +1592,234 @@ class AwsInventory {
                     await new Promise(resolve => setTimeout(resolve, rWait));
 
 
-                    fName()
-                        .then((p) => {
-                            resolve(p);
-                        })
-                        .catch(async (e) => {
-                            console.warn(`Problem w requestSender on Fn ${fName.name} for region ${region}.`);
-                            console.log(e.name);
-                            console.log(Object.keys(e));
+                    let fnName;
+                    switch (fName) {
+                        case 'acm_ListCertificates':
+                            fnName = acm_ListCertificates;
+                            break;
+                        case 'autoscaling_DescribeLaunchConfigurations':
+                            fnName = autoscaling_DescribeLaunchConfigurations;
+                            break;
+                        case 'autoscaling_DescribeAutoScalingGroups':
+                            fnName = autoscaling_DescribeAutoScalingGroups;
+                            break;
+                        case 'cloudfront_ListCachePolicies':
+                            fnName = cloudfront_ListCachePolicies;
+                            break;
+                        case 'cloudfront_ListDistributions':
+                            fnName = cloudfront_ListDistributions;
+                            break;
+                        case 'cloudwatch_DescribeAlarms':
+                            fnName = cloudwatch_DescribeAlarms;
+                            break;
+                        case 'dynamodb_ListTables':
+                            fnName = dynamodb_ListTables;
+                            break;
+                        case 'ec2_DescribeVpcs':
+                            fnName = ec2_DescribeVpcs;
+                            break;
+                        case 'ec2_DescribeAvailabilityZones':
+                            fnName = ec2_DescribeAvailabilityZones;
+                            break;
+                        case 'ec2_DescribeSecurityGroups':
+                            fnName = ec2_DescribeSecurityGroups;
+                            break;
+                        case 'ec2_DescribeVolumes':
+                            fnName = ec2_DescribeVolumes;
+                            break;
+                        case 'ec2_DescribeRouteTables':
+                            fnName = ec2_DescribeRouteTables;
+                            break;
+                        case 'ec2_DescribeSubnets':
+                            fnName = ec2_DescribeSubnets;
+                            break;
+                        case 'ec2_DescribeInstances':
+                            fnName = ec2_DescribeInstances;
+                            break;
+                        case 'ecr_DescribeRepositories':
+                            fnName = ecr_DescribeRepositories;
+                            break;
+                        // case 'ecs_ListClusters':
+                        //     fnName = ecs_ListClusters;
+                        //     break;
+                        // case 'ecs_ListTaskDefinitions':
+                        //     fnName = ecs_ListTaskDefinitions;
+                        //     break;
+                        case 'elasticache_DescribeCacheClusters':
+                            fnName = elasticache_DescribeCacheClusters;
+                            break;
+                        case 'elasticache_DescribeReplicationGroups':
+                            fnName = elasticache_DescribeReplicationGroups;
+                            break;
+                        case 'elasticache_DescribeCacheSubnetGroups':
+                            fnName = elasticache_DescribeCacheSubnetGroups;
+                            break;
+                        case 'elasticloadbalancing_DescribeLoadBalancers':
+                            fnName = elasticloadbalancing_DescribeLoadBalancers;
+                            break;
+                        case 'iam_ListUsers':
+                            fnName = iam_ListUsers;
+                            break;
+                        case 'iam_ListPolicies':
+                            fnName = iam_ListPolicies;
+                            break;
+                        case 'iam_ListRoles':
+                            fnName = iam_ListRoles;
+                            break;
+                        case 'lambda_ListFunctions':
+                            fnName = lambda_ListFunctions;
+                            break;
+                        case 'rds_DescribeDBSubnetGroups':
+                            fnName = rds_DescribeDBSubnetGroups;
+                            break;
+                        case 'rds_DescribeDBParameterGroups':
+                            fnName = rds_DescribeDBParameterGroups;
+                            break;
+                        case 'rds_DescribeOptionGroups':
+                            fnName = rds_DescribeOptionGroups;
+                            break;
+                        case 'rds_DescribeDBClusters':
+                            fnName = rds_DescribeDBClusters;
+                            break;
+                        case 'rds_DescribeDBInstances':
+                            fnName = rds_DescribeDBInstances;
+                            break;
+                        case 'route53_ListHostedZones':
+                            fnName = route53_ListHostedZones;
+                            break;
+                        case 'sqs_ListQueues':
+                            fnName = sqs_ListQueues;
+                            break;
+                        default:
+                            const message = `${region}/fName '${fName}' is not an inventory initatior.`;
+                            resolve(message);
+                    }
 
-                            switch (e.name) {
-                                case 'AccessDeniedException':
-                                    console.warn(`No retry - access denied insurmountable exception.`);
-                                    reject(e);
-                                    break;
 
-                                case 'UnrecognizedClientException':
-                                    console.warn(`No retry - Unrecognized excpetion, likely no access to region.`);
-                                    reject(e);
-                                    break;
+                    if (fnName !== undefined) {
 
-                                default:
-                                    let p;
-                                    if (retry < RETRIES) {
-                                        console.log(`Retrying, prev error was ${e.name}`);
-                                        p = await requestSender(fName, retry + 1);
-                                    } else {
-                                        console.warn(`Too many retries; failing.`);
-                                        reject(e);
-                                    }
-                            }
-                            // let re = /AccessDenied/g;
-                            // let arrMatches = e.match(re);
-                            // if (arrMatches !== null) {
-                            // }
-                        });
+                        // try {
+
+                        fnName(region, this.credentials)
+                            .then((p) => {
+                                console.log(p);
+                                let Resources = Object.keys(p[region]);
+                                console.log(Resources);
+                                Resources.forEach((resource) => {
+                                    let something = p[region][resource];
+                                    this.objGlobal[region][resource] = something;
+                                });
+                                // this.objGlobal[region] = p[region];
+                                console.log(this.objGlobal);
+                                resolve(p);
+                            })
+                            .catch(async (e) => {
+
+                                switch (e.name) {
+                                    case 'AuthFailure':
+                                        console.warn(`AuthFailure: will not retry.`);
+                                        resolve(e);
+                                        break;
+
+                                    case 'AccessDeniedException':
+                                        console.warn(`AccessDeniedException: will not retry.`);
+                                        resolve(e);
+                                        break;
+
+                                    case 'InvalidClientTokenId':
+                                        console.warn(`InvalidClientTokenId: will not retry.`);
+                                        resolve(e);
+                                        break;
+
+                                    case 'UnrecognizedClientException':
+                                        console.warn(`UnrecognizedClientException: will not retry.`);
+                                        resolve(e);
+                                        break;
+
+                                    default:
+                                        console.log(`Mk.606`);
+                                        console.warn(`Problem w requestSender on Fn '${fName}' for region ${region}.`);
+                                        console.log(e.name);
+                                        console.log(Object.keys(e));
+
+
+                                        let p;
+                                        if (retry < RETRIES) {
+                                            console.log(`Mk.707`);
+                                            console.log(`Retrying, prev error was ${e.name}`);
+                                            p = await requestSender(fName, retry + 1);
+                                        } else {
+                                            console.log(`Mk.708`);
+                                            console.warn(`Too many retries; failing.`);
+                                            resolve(e);
+                                        }
+                                }
+                            });
+
+                        // } catch (e) {
+
+                        // console.warn(fName);
+                        // console.warn(fnName);
+                        // console.error(e);
+
+                        // }
+
+                    }
                 });
             };
 
 
-            let arrRegionRequests = [];
-            services.forEach((svc) => {
-                switch (svc) {
-                    case 'cloudfront':
-                        if (region === 'us-east-1') {
-                            arrRegionRequests.push(requestSender(rCfLD));
-                            arrRegionRequests.push(requestSender(rCfLCP));
-                        }
-                        break;
+            let strApiCallFn = `${strService}_${apiCall}`;
+            switch (strService) {
+                case 'cloudfront':
+                    if (region === 'us-east-1') {
+                        requestSender(strApiCallFn)
+                            .then((p) => {
+                                resolve(p);
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+                    } else {
+                        resolve(`We don't make calls to ${strService} outside of us-east-1.`);
+                    }
+                    break;
+                case 'iam':
+                    if (region === 'us-east-1') {
+                        requestSender(strApiCallFn)
+                            .then((p) => {
+                                resolve(p);
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+                    } else {
+                        resolve(`We don't make calls to ${strService} outside of us-east-1.`);
+                    }
+                    break;
+                case 'route53':
+                    if (region === 'us-east-1') {
+                        requestSender(strApiCallFn)
+                            .then((p) => {
+                                resolve(p);
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+                    } else {
+                        resolve(`We don't make calls to ${strService} outside of us-east-1.`);
+                    }
+                    break;
+                default:
+                    requestSender(strApiCallFn)
+                        .then((p) => {
+                            resolve(p);
+                        })
+                        .catch((e) => {
+                            reject(e);
+                        });
+            }
 
-                    case 'iam':
-                        if (region === 'us-east-1') {
-                            arrRegionRequests.push(requestSender(rIamLP));
-                            arrRegionRequests.push(requestSender(rIamLR));
-                            arrRegionRequests.push(requestSender(rIamLU));
-                        }
-                        break;
-
-                    case 'route53':
-                        if (region === 'us-east-1') {
-                            arrRegionRequests.push(requestSender(rR53LHZ));
-                        }
-                        break;
-
-                    case 'lambda':
-                        arrRegionRequests.push(requestSender(rLamLF));
-                        break;
-
-                    case 'elasticache':
-                        arrRegionRequests.push(requestSender(rElcDCC));
-                        arrRegionRequests.push(requestSender(rElcDCSG));
-                        arrRegionRequests.push(requestSender(rElcDRG));
-                        break;
-
-                    case 'autoscaling':
-                        arrRegionRequests.push(requestSender(rAsgDASG));
-                        arrRegionRequests.push(requestSender(rAsgDLC));
-                        break;
-
-                    case 'dynamodb':
-                        arrRegionRequests.push(requestSender(rDdbLT));
-                        break;
-
-                    case 'rds':
-                        arrRegionRequests.push(requestSender(rRdsDI));
-                        arrRegionRequests.push(requestSender(rRdsDC));
-                        arrRegionRequests.push(requestSender(rRdsDOG));
-                        arrRegionRequests.push(requestSender(rRdsDPG));
-                        arrRegionRequests.push(requestSender(rRdsDSG));
-                        break;
-
-                    case 'ec2':
-                        arrRegionRequests.push(requestSender(rEc2DI));
-                        arrRegionRequests.push(requestSender(rEc2DSG));
-                        arrRegionRequests.push(requestSender(rEc2DS));
-                        arrRegionRequests.push(requestSender(rEc2DV));
-                        arrRegionRequests.push(requestSender(rEc2DVo));
-                        arrRegionRequests.push(requestSender(rEc2DRT));
-                        arrRegionRequests.push(requestSender(rEc2DAZ));
-                        break;
-
-                    case 'cloudwatch':
-                        arrRegionRequests.push(requestSender(rCwDA));
-                        break;
-
-                    case 'ecr':
-                        arrRegionRequests.push(requestSender(rEcrDR));
-                        break;
-
-                    case 'ecs':
-                        arrRegionRequests.push(requestSender(rEcsLC));
-                        arrRegionRequests.push(requestSender(rEcsLTD));
-                        break;
-
-                    case 's3':
-                        // arrRegionRequests.push(requestSender(rS3LB));
-                        break;
-
-                    case 'elasticloadbalancing':
-                        arrRegionRequests.push(requestSender(rELBV2DLB));
-                        break;
-
-                    case 'acm':
-                        arrRegionRequests.push(requestSender(rAcmLC));
-                        break;
-
-                    case 'apigateway':
-                        arrRegionRequests.push(requestSender(rAgwGRAs));
-                        break;
-
-                    case 'sqs':
-                        arrRegionRequests.push(requestSender(rSqsLQ));
-                        break;
-
-                    default:
-                        console.error(`Unknown service: '${svc}'`);
-                }
-            });
-
-
-            Promise.all(arrRegionRequests)
-                .then((p) => {
-                    resolve(p);
-                });
         });
     };
 
@@ -1717,23 +1828,71 @@ class AwsInventory {
         return new Promise(async (resolve) => {
 
             this.objGlobal = {};
-            let arrRequests = [];
+            let Account;
+
 
             /*
             Calculate temporal spread
              */
-            this.MAX_WAIT = Math.floor((this.regions.length + this.services.length) / 2) * 1000;
-            arrRequests.push(this.obtainAccountNumber());
-            this.regions.forEach((region) => {
-                arrRequests.push(this.run(region, this.services, this.credentials));
+            let numCalls = 0;
+            Object.keys(this.calls).forEach((region) => {
+                Object.keys(this.calls[region]).forEach((service) => {
+                    this.calls[region][service].forEach((oS) => {
+                        numCalls++;
+                    });
+                });
             });
+
+
+            this.MAX_WAIT = Math.floor((numCalls) / 10) * 1000;
+
+
+            let arrRequests = [];
+            arrRequests.push(this.obtainAccountNumber('us-east-1')
+                .then((data) => {
+                    Account = data.Account;
+                }));
+
+
+            Object.keys(this.calls).forEach((strRegion) => {
+                let arrServices = Object.keys(this.calls[strRegion])
+                arrServices.forEach((strService) => {
+                    this.calls[strRegion][strService].forEach((apiCall) => {
+                        arrRequests.push(this.run(strRegion, strService, apiCall));
+                    });
+                });
+            });
+
 
             Promise.all(arrRequests)
                 .then(() => {
-                    resolve(this.objGlobal);
+                    const regions = [];
+                    Object.keys(this.objGlobal).forEach((RegionName) => {
+                        let objRegion = this.objGlobal[RegionName];
+                        objRegion.RegionName = RegionName;
+                        regions.push(objRegion)
+                    });
+                    let obj = {
+                        Account,
+                        cloudProviderName: 'aws',
+                        regions,
+                    };
+                    resolve(obj);
+                    // resolve(this.objGlobal);
+                })
+                .catch((e) => {
+                    console.log(`Mk.808`);
+                    console.error(e);
+                    console.log(`Mk.809`);
+                    let obj = {
+                        Account,
+                        cloudProviderName: 'aws',
+                        regions,
+                    };
+                    resolve(obj);
                 });
         });
     }
 }
 
-module.exports = exports = AwsInventory.AwsInventory = AwsInventory;
+// module.exports = exports = AwsInventory.AwsInventory = AwsInventory;
