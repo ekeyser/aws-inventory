@@ -1,11 +1,11 @@
 'use strict';
 
-import {LambdaClient, paginateListFunctions} from "@aws-sdk/client-lambda";
+import {CloudWatchClient, paginateDescribeAlarms} from "@aws-sdk/client-cloudwatch";
 
-export let lambda_ListFunctions = (region, credentials) => {
+export let cloudwatch_DescribeAlarms = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
-        const client = new LambdaClient(
+        const client = new CloudWatchClient(
             {
                 region,
                 credentials
@@ -19,25 +19,25 @@ export let lambda_ListFunctions = (region, credentials) => {
 
         const cmdParams = {};
 
-        const paginator = paginateListFunctions(pConfig, cmdParams);
+        const paginator = paginateDescribeAlarms(pConfig, cmdParams);
 
         const arr = [];
 
         try {
 
             for await (const page of paginator) {
-                arr.push(...page.Functions);
+                arr.push(...page.MetricAlarms);
             }
 
         } catch (e) {
             reject(e);
         }
 
-        // this.objGlobal[region].Functions = arr;
-        // resolve(`${region}/lambda_ListFunctions`);
+        // this.objGlobal[region].MetricAlarms = arr;
+        // resolve(`${region}/cloudwatch_DescribeAlarms`);
         let obj = {
             [region]: {
-                Functions: arr
+                MetricAlarms: arr
             }
         };
         resolve(obj);
