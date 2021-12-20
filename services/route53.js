@@ -32,12 +32,12 @@ export let route53_ListHostedZones = (region, credentials) => {
         } catch (e) {
             reject(e);
         }
-       
-        let objGlobal = {
+
+        let obj = {
             [region]: {
                 HostedZones: arr
             }
         };
-        resolve(objGlobal);
+        resolve(obj);
     });
 };

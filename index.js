@@ -1,22 +1,18 @@
-/* eslint-disable */
 /**
  * @author ekeyser
  */
 'use strict';
 
-
+import config from './config';
 import {
     route53_ListHostedZones
 } from "./services/route53";
-
 import {
     acm_ListCertificates
 } from './services/acm';
-
 import {
     sqs_ListQueues
 } from './services/sqs';
-
 import {
     ec2_DescribeVpcs,
     ec2_DescribeAvailabilityZones,
@@ -26,26 +22,21 @@ import {
     ec2_DescribeSubnets,
     ec2_DescribeInstances,
 } from './services/ec2';
-
 import {
     iam_ListUsers,
     iam_ListRoles,
     iam_ListPolicies,
 } from './services/iam';
-
 import {
     sts_GetCallerIdentity
 } from "./services/sts";
-
 import {
     lambda_ListFunctions
 } from "./services/lambda";
-
 import {
     cloudfront_ListCachePolicies,
     cloudfront_ListDistributions,
 } from "./services/cloudfront";
-
 import {
     rds_DescribeDBClusters,
     rds_DescribeDBInstances,
@@ -53,46 +44,38 @@ import {
     rds_DescribeDBSubnetGroups,
     rds_DescribeOptionGroups
 } from "./services/rds";
-
 import {
     ecr_DescribeRepositories
 } from "./services/ecr";
-
 import {
     cloudwatch_DescribeAlarms
 } from "./services/cloudwatch";
-
 import {
     elasticloadbalancing_DescribeLoadBalancers
 } from "./services/elasticloadbalancing";
-
 import {
     elasticache_DescribeCacheClusters,
     elasticache_DescribeCacheSubnetGroups,
     elasticache_DescribeReplicationGroups
 } from "./services/elasticache";
-
 import {
     autoscaling_DescribeAutoScalingGroups,
     autoscaling_DescribeLaunchConfigurations
 } from "./services/autoscaling";
-
 import {
     dynamodb_ListTables
 } from "./services/dynamodb";
-
 import {
     ecs_ListClusters,
     ecs_ListTaskDefinitions
 } from "./services/ecs";
-
 import {
     apigateway_GetRestApis
 } from "./services/apigateway";
-
 import {
     s3_ListBuckets
 } from "./services/s3";
+
 
 export class AwsInventory {
 
@@ -100,6 +83,39 @@ export class AwsInventory {
         this.credentials = config.credentials;
         this.calls = config.calls;
     }
+
+    getInventoryInitiators = () => {
+        return {
+            "acm": [
+                "ListCertificates"
+            ],
+            "apigateway": [
+                "GetRestApis"
+            ],
+            "autoscaling": [],
+            "cloudfront": [],
+            "cloudwatch": [],
+            "dynamodb": [],
+            "ec2": [],
+            "ecr": [],
+            "ecs": [],
+            "elasticache": [],
+            "elasticloadbalancing": [],
+            "iam": [],
+            "lambda": [],
+            "rds": [],
+            "route53": [],
+            "s3": [],
+            "sqs": [],
+            "sts": [],
+        };
+    };
+
+
+    static getRequestPermissions = () => {
+        return config.permissions;
+    };
+
 
     obtainAccountNumber(region) {
         return new Promise((resolve, reject) => {
@@ -254,10 +270,13 @@ export class AwsInventory {
 
                         fnName(region, this.credentials)
                             .then((p) => {
+
                                 Object.keys(p[region]).forEach((resource) => {
                                     this.objGlobal[region][resource] = p[region][resource];
                                 });
+
                                 resolve(p);
+
                             })
                             .catch(async (e) => {
 
@@ -390,7 +409,7 @@ export class AwsInventory {
             });
 
 
-            this.MAX_WAIT = Math.floor((numCalls) / 20) * 1000;
+            this.MAX_WAIT = Math.floor((numCalls) / 50) * 1000;
 
 
             let arrRequests = [];
@@ -410,35 +429,35 @@ export class AwsInventory {
             });
 
 
+            let regions = {};
             Promise.all(arrRequests)
                 .then(() => {
-                    const regions = [];
-                    Object.keys(this.objGlobal).forEach((RegionName) => {
-                        let objRegion = this.objGlobal[RegionName];
-                        objRegion.RegionName = RegionName;
-                        regions.push(objRegion)
+
+
+                    Object.keys(this.objGlobal).forEach((region) => {
+                        regions[region] = this.objGlobal[region];
                     });
+
                     let obj = {
                         Account,
                         cloudProviderName: 'aws',
                         regions,
                     };
+
                     resolve(obj);
-                    // resolve(this.objGlobal);
+
                 })
                 .catch((e) => {
-                    console.log(`Mk.808`);
+
                     console.error(e);
-                    console.log(`Mk.809`);
                     let obj = {
                         Account,
                         cloudProviderName: 'aws',
                         regions,
                     };
                     resolve(obj);
+
                 });
         });
     }
 }
-
-// module.exports = exports = AwsInventory.AwsInventory = AwsInventory;

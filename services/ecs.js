@@ -83,15 +83,14 @@ let ecs_DescribeClusters = (clusters, client) => {
             .then((data) => {
                 data.clusters.forEach((cluster) => {
                     ecs_ListServices(cluster);
-                    if (this.objGlobal[region].ECSClusters === undefined) {
-                        this.objGlobal[region].ECSClusters = [];
-                    }
-
-                    this.objGlobal[region].ECSClusters.push(cluster);
+                    // if (this.objGlobal[region].ECSClusters === undefined) {
+                    //     this.objGlobal[region].ECSClusters = [];
+                    // }
+                    //
+                    // this.objGlobal[region].ECSClusters.push(cluster);
                 });
-                // resolve(`${region}/ecs_DescribeClusters`);
-                resolve(`${region}/ecs_DescribeClusters`);
-                resolve(obj);
+
+                resolve(data);
             })
             .catch((e) => {
                 reject(e);
@@ -208,7 +207,11 @@ export let ecs_ListTaskDefinitions = (region, credentials) => {
             arrTaskDefinitions.push(taskDefinition);
         }
 
-        this.objGlobal[region].TaskDefinitions = arrTaskDefinitions;
-        resolve(`${region}/ecs_ListTaskDefinitions`);
+        let obj = {
+            [region]: {
+                TaskDefinitions: arrTaskDefinitions
+            }
+        };
+        resolve(obj);
     });
 };

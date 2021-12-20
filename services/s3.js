@@ -12,16 +12,17 @@ export let s3_ListBuckets = (region, credentials) => {
             }
         );
 
+        let obj = {
+            [region]: {
+                Buckets: []
+            }
+        };
         client.send(new ListBucketsCommand({}))
             .then((data) => {
                 data.Buckets.forEach((bucket) => {
-                    if (this.objGlobal[region].Buckets === undefined) {
-                        this.objGlobal[region].Buckets = [];
-                    }
-
-                    this.objGlobal[region].Buckets.push(bucket);
+                    obj[region].Buckets.push(bucket);
                 });
-                resolve(`${region}/s3_ListAllMyBuckets`);
+                resolve(obj);
             })
             .catch((err) => {
                 reject(err);

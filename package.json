@@ -1,11 +1,13 @@
 {
   "name": "aws-inventory",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "AWS Infrastructure Inventory",
   "main": "index.js",
   "repository": "ekeyser/aws-inventory",
   "files": [
-    "index.js"
+    "index.js",
+    "config.json",
+    "services"
   ],
   "scripts": {
     "build": "rollup -c",
