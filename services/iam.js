@@ -12,7 +12,7 @@ import {
 } from '@aws-sdk/client-iam';
 
 
-let iam_GetUserPolicy = (user, policies, client) => {
+let iam_GetUserPolicy = (user, policies, client, MAX_WAIT) => {
     return new Promise((resolve, reject) => {
 
         let arrPromises = [];
@@ -59,7 +59,7 @@ let iam_GetUserPolicy = (user, policies, client) => {
     });
 };
 
-let iam_ListUserPolicies = (users, client) => {
+let iam_ListUserPolicies = (users, client, MAX_WAIT) => {
     return new Promise((resolve, reject) => {
 
         const pConfig = {
@@ -104,7 +104,7 @@ let iam_ListUserPolicies = (users, client) => {
     });
 };
 
-export let iam_ListUsers = (region, credentials) => {
+export let iam_ListUsers = (region, credentials, MAX_WAIT) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -126,6 +126,8 @@ export let iam_ListUsers = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                let rWait = Math.round(Math.random() * MAX_WAIT);
+                await new Promise(resolve => setTimeout(resolve, rWait));
                 arr.push(...page.Users);
             }
         } catch (e) {
@@ -147,7 +149,7 @@ export let iam_ListUsers = (region, credentials) => {
 };
 
 
-let iam_GetPolicyVersion = (policy, client) => {
+let iam_GetPolicyVersion = (policy, client, MAX_WAIT) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -178,7 +180,7 @@ let iam_GetPolicyVersion = (policy, client) => {
 
                 // let objGlobal = {
                 //     [region]: {
-                //         PolicyDocuments: 
+                //         PolicyDocuments:
                 //     }
                 // }
                 resolve({
@@ -196,7 +198,7 @@ let iam_GetPolicyVersion = (policy, client) => {
 };
 
 
-let iam_GetPolicy = (policy, client) => {
+let iam_GetPolicy = (policy, client, MAX_WAIT) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -222,7 +224,7 @@ let iam_GetPolicy = (policy, client) => {
 };
 
 
-export let iam_ListPolicies = (region, credentials) => {
+export let iam_ListPolicies = (region, credentials, MAX_WAIT) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -246,6 +248,8 @@ export let iam_ListPolicies = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                let rWait = Math.round(Math.random() * MAX_WAIT);
+                await new Promise(resolve => setTimeout(resolve, rWait));
                 arr.push(...page.Policies);
             }
         } catch (e) {
@@ -276,7 +280,7 @@ export let iam_ListPolicies = (region, credentials) => {
 };
 
 
-export let iam_ListRoles = (region, credentials) => {
+export let iam_ListRoles = (region, credentials, MAX_WAIT) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -296,8 +300,9 @@ export let iam_ListRoles = (region, credentials) => {
         const arr = [];
 
         try {
-
             for await (const page of paginator) {
+                let rWait = Math.round(Math.random() * MAX_WAIT);
+                await new Promise(resolve => setTimeout(resolve, rWait));
                 arr.push(...page.Roles);
             }
         } catch (e) {
