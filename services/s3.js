@@ -3,46 +3,14 @@
 import axios from 'axios';
 import sha256 from 'sha256';
 import crypto from 'crypto-js';
-import {ListBucketsCommand, S3Client} from "@aws-sdk/client-s3";
 
 export let s3_ListBuckets = (region, credentials, oRC) => {
-    return new Promise((resolve, reject) => {
-
-        const client = new S3Client(
-            {
-                region,
-                credentials
-            }
-        );
-
-        let obj = {
-            [region]: {
-                Buckets: []
-            }
-        };
-        client.send(new ListBucketsCommand({}))
-            .then((data) => {
-                oRC.incr();
-                data.Buckets.forEach((bucket) => {
-                    obj[region].Buckets.push(bucket);
-                });
-                resolve(obj);
-            })
-            .catch((err) => {
-                oRC.incr();
-                reject(err);
-            });
-    });
-};
-
-export let s3_ListBucketsAlt = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
 
-        console.log(credentials);
         const AWS_SIG_VER = 'aws4_request';
-        const AWS_ACCESS_KEY_ID=credentials.accessKeyId;
-        const AWS_SECRET_ACCESS_KEY=credentials.secretAccessKey;
+        const AWS_ACCESS_KEY_ID = credentials.accessKeyId;
+        const AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
 
         const AWSS3HOSTNAME = 's3.amazonaws.com';
 
@@ -57,7 +25,6 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
 
         let getS3HashedCanonicalRequest = (httpMethod, canonicalUri, signedHeaders, queryString, canonicalHeaders, hashed_payload) => {
 
-            // let timestamp = `${TS}\n`;
             let method = `${httpMethod}\n`;
             let uri = `${canonicalUri}\n`;
             let query_string = `${queryString}\n`;
@@ -79,34 +46,24 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
                     signed_headers += `;${header_name}`;
                 }
             });
-            // signed_headers += `\n`;
 
-            // let str = `${method}${uri}${query_string}${canonical_headers}${host}${date_header}${signed_headers}${hashed_payload}`;
             let str = `${method}${uri}${query_string}${canonical_headers}${signed_headers}\n${hashed_payload}`;
-            console.log(str);
 
             let hash = sha256(str);
-            console.log(hash);
             return [hash, signed_headers];
 
         };
 
 
-        const bucket = ``;
         let strUri = '';
         let canonicalUri = `/${encodeURIComponent(strUri)}`;
 
 
-        /*
-        REAL
-         */
         const serviceName = 's3';
         let HttpRequestMethod = 'GET';
-        // let canonicalUri = '/';
         let canonicalQueryString = '';
         let signedHeaders = [
             'host',
-            // 'range',
             'x-amz-content-sha256',
             'x-amz-date',
         ];
@@ -124,14 +81,10 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
 
         let hashed_payload = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
         let canonicalHeaders = [
-            // `date:${e.toUTCString()}`,
             `host:${AWSS3HOSTNAME}`,
-            // `range:${strRangeBytes}`,
             `x-amz-content-sha256:${hashed_payload}`,
             `x-amz-date:${TS}`,
-            // `x-amz-storage-class:REDUCED_REDUNDANCY`,
         ];
-
 
 
         const regionName = 'us-east-1';
@@ -147,9 +100,7 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
             canonicalHeaders,
             hashed_payload
         );
-        console.log(HashedCanonicalRequest);
         let StringToSign = `${Algorithm}\n${RequestDateTime}${CredentialScope}\n${HashedCanonicalRequest}`;
-        console.log(StringToSign);
 
 
         let signingKey = getSignatureKey(AWS_SECRET_ACCESS_KEY, shortDate, regionName, serviceName, AWS_SIG_VER);
@@ -171,7 +122,6 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
                 "Authorization": authorization,
             },
         };
-        console.log(config);
 
         let someObj = {
             url,
@@ -179,17 +129,25 @@ export let s3_ListBucketsAlt = (region, credentials, oRC) => {
         };
 
         let blob = Buffer.from(JSON.stringify(someObj)).toString('base64');
-        console.log(blob);
 
-        // resolve(blob);
-        const rampartUrl = 'http://localhost:3000/s3helper/';
-        const rampartConfig = {};
-        const response = await axios.post(rampartUrl, {
+        // TODO resolve this dev setting
+        const s3HelperUrl = 'http://localhost:3000/s3helper/';
+        axios.post(s3HelperUrl, {
             blob
-        }, rampartConfig);
-        // const response = await axios.get(url, config);
-        const responseData = response.data;
-        console.log(responseData);
+        }, {})
+            .then((response) => {
+
+                const b64Resp = response.data;
+                const responseData = Buffer.from(b64Resp.data, 'base64').toString('ascii');
+                const objResponseData = JSON.parse(responseData);
+                let obj = {
+                    [region]: {
+                        Buckets: [...objResponseData.ListAllMyBucketsResult.Buckets.Bucket]
+                    }
+                };
+                resolve(obj);
+
+            });
 
     });
 
