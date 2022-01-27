@@ -2,7 +2,20 @@
 
 import {LambdaClient, paginateListFunctions} from "@aws-sdk/client-lambda";
 
-export let lambda_ListFunctions = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "lambda",
+            "call": "ListFunctions",
+            "permission": "ListFunctions",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let lambda_ListFunctions = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new LambdaClient(
@@ -26,10 +39,12 @@ export let lambda_ListFunctions = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.Functions);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

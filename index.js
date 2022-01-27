@@ -3,124 +3,83 @@
  */
 'use strict';
 
-import config from './config';
-import {
-    route53_ListHostedZones
-} from "./services/route53";
-import {
-    acm_ListCertificates
-} from './services/acm';
-import {
-    sqs_ListQueues
-} from './services/sqs';
-import {
-    ec2_DescribeVpcs,
-    ec2_DescribeAvailabilityZones,
-    ec2_DescribeSecurityGroups,
-    ec2_DescribeVolumes,
-    ec2_DescribeRouteTables,
-    ec2_DescribeSubnets,
-    ec2_DescribeInstances,
-} from './services/ec2';
-import {
-    iam_ListUsers,
-    iam_ListRoles,
-    iam_ListPolicies,
-} from './services/iam';
-import {
-    sts_GetCallerIdentity
-} from "./services/sts";
-import {
-    lambda_ListFunctions
-} from "./services/lambda";
-import {
-    cloudfront_ListCachePolicies,
-    cloudfront_ListDistributions,
-} from "./services/cloudfront";
-import {
-    rds_DescribeDBClusters,
-    rds_DescribeDBInstances,
-    rds_DescribeDBParameterGroups,
-    rds_DescribeDBSubnetGroups,
-    rds_DescribeOptionGroups
-} from "./services/rds";
-import {
-    ecr_DescribeRepositories
-} from "./services/ecr";
-import {
-    cloudwatch_DescribeAlarms
-} from "./services/cloudwatch";
-import {
-    elasticloadbalancing_DescribeLoadBalancers
-} from "./services/elasticloadbalancing";
-import {
-    elasticache_DescribeCacheClusters,
-    elasticache_DescribeCacheSubnetGroups,
-    elasticache_DescribeReplicationGroups
-} from "./services/elasticache";
-import {
-    autoscaling_DescribeAutoScalingGroups,
-    autoscaling_DescribeLaunchConfigurations
-} from "./services/autoscaling";
-import {
-    dynamodb_ListTables
-} from "./services/dynamodb";
-import {
-    ecs_ListClusters,
-    ecs_ListTaskDefinitions
-} from "./services/ecs";
-import {
-    apigateway_GetRestApis
-} from "./services/apigateway";
-import {
-    s3_ListBuckets
-} from "./services/s3";
-
+// import config from './config';
+import * as _acm from './services/acm';
+import * as _apigateway from "./services/apigateway";
+import * as _autoscaling from "./services/autoscaling";
+import * as _cloudfront from "./services/cloudfront";
+import * as _cloudwatch from "./services/cloudwatch";
+import * as _dynamodb from "./services/dynamodb";
+import * as _ec2 from './services/ec2';
+import * as _ecr from "./services/ecr";
+import * as _ecs from "./services/ecs";
+import * as _elasticache from "./services/elasticache";
+import * as _elasticloadbalancing from "./services/elasticloadbalancing";
+import * as _iam from './services/iam';
+import * as _lambda from "./services/lambda";
+import * as _rds from "./services/rds";
+import * as _route53 from "./services/route53";
+import * as _s3 from "./services/s3";
+import * as _sqs from './services/sqs';
+import * as _sns from './services/sns';
+import * as _sts from "./services/sts";
 
 export class AwsInventory {
 
     constructor(config) {
         this.credentials = config.credentials;
         this.calls = config.calls;
+        this.permissions = [];
     }
 
-    getInventoryInitiators = () => {
-        return {
-            "acm": [
-                "ListCertificates"
-            ],
-            "apigateway": [
-                "GetRestApis"
-            ],
-            "autoscaling": [],
-            "cloudfront": [],
-            "cloudwatch": [],
-            "dynamodb": [],
-            "ec2": [],
-            "ecr": [],
-            "ecs": [],
-            "elasticache": [],
-            "elasticloadbalancing": [],
-            "iam": [],
-            "lambda": [],
-            "rds": [],
-            "route53": [],
-            "s3": [],
-            "sqs": [],
-            "sts": [],
-        };
+
+    static getPermissions = () => {
+
+        let permissions = [];
+
+        let services = [
+            'acm',
+            'apigateway',
+            'autoscaling',
+            'cloudfront',
+            'cloudwatch',
+            'dynamodb',
+            'ec2',
+            'ecr',
+            'ecs',
+            'elasticache',
+            'elasticloadbalancing',
+            'iam',
+            'lambda',
+            'rds',
+            'route53',
+            's3',
+            'sns',
+            'sqs',
+            'sts'
+        ];
+        services.forEach((service) => {
+
+            let svc = eval(`_${service}`);
+            let perms = svc.getPerms();
+            permissions.push(...perms);
+
+        });
+
+        return permissions;
+
     };
 
 
-    static getRequestPermissions = () => {
-        return config.permissions;
+    static getCalls = () => {
+        return config.calls;
     };
 
 
     obtainAccountNumber(region) {
         return new Promise((resolve, reject) => {
 
-            sts_GetCallerIdentity(region, this.credentials)
+            _sts.sts_GetCallerIdentity(region, this.credentials)
                 .then((p) => {
                     resolve(p);
                 })
@@ -157,106 +116,121 @@ export class AwsInventory {
                     let fnName;
                     switch (fName) {
                         case 'acm_ListCertificates':
-                            fnName = acm_ListCertificates;
+                            fnName = _acm.acm_ListCertificates;
                             break;
-                        // case 'apigateway_GetRestApis':
-                        //     fnName = apigateway_GetRestApis;
-                        //     break;
+                        case 'apigateway_GetRestApis':
+                            fnName = _apigateway.apigateway_GetRestApis;
+                            break;
                         case 'autoscaling_DescribeLaunchConfigurations':
-                            fnName = autoscaling_DescribeLaunchConfigurations;
+                            fnName = _autoscaling.autoscaling_DescribeLaunchConfigurations;
                             break;
                         case 'autoscaling_DescribeAutoScalingGroups':
-                            fnName = autoscaling_DescribeAutoScalingGroups;
+                            fnName = _autoscaling.autoscaling_DescribeAutoScalingGroups;
                             break;
                         case 'cloudfront_ListCachePolicies':
-                            fnName = cloudfront_ListCachePolicies;
+                            fnName = _cloudfront.cloudfront_ListCachePolicies;
                             break;
                         case 'cloudfront_ListDistributions':
-                            fnName = cloudfront_ListDistributions;
+                            fnName = _cloudfront.cloudfront_ListDistributions;
                             break;
                         case 'cloudwatch_DescribeAlarms':
-                            fnName = cloudwatch_DescribeAlarms;
+                            fnName = _cloudwatch.cloudwatch_DescribeAlarms;
                             break;
                         case 'dynamodb_ListTables':
-                            fnName = dynamodb_ListTables;
+                            fnName = _dynamodb.dynamodb_ListTables;
                             break;
                         case 'ec2_DescribeVpcs':
-                            fnName = ec2_DescribeVpcs;
+                            fnName = _ec2.ec2_DescribeVpcs;
                             break;
                         case 'ec2_DescribeAvailabilityZones':
-                            fnName = ec2_DescribeAvailabilityZones;
+                            fnName = _ec2.ec2_DescribeAvailabilityZones;
                             break;
                         case 'ec2_DescribeSecurityGroups':
-                            fnName = ec2_DescribeSecurityGroups;
+                            fnName = _ec2.ec2_DescribeSecurityGroups;
                             break;
                         case 'ec2_DescribeVolumes':
-                            fnName = ec2_DescribeVolumes;
+                            fnName = _ec2.ec2_DescribeVolumes;
                             break;
                         case 'ec2_DescribeRouteTables':
-                            fnName = ec2_DescribeRouteTables;
+                            fnName = _ec2.ec2_DescribeRouteTables;
                             break;
                         case 'ec2_DescribeSubnets':
-                            fnName = ec2_DescribeSubnets;
+                            fnName = _ec2.ec2_DescribeSubnets;
                             break;
                         case 'ec2_DescribeInstances':
-                            fnName = ec2_DescribeInstances;
+                            fnName = _ec2.ec2_DescribeInstances;
                             break;
                         case 'ecr_DescribeRepositories':
-                            fnName = ecr_DescribeRepositories;
+                            fnName = _ecr.ecr_DescribeRepositories;
                             break;
-                        // case 'ecs_ListClusters':
-                        //     fnName = ecs_ListClusters;
-                        //     break;
-                        // case 'ecs_ListTaskDefinitions':
-                        //     fnName = ecs_ListTaskDefinitions;
-                        //     break;
+                        // case 'ecs_ListServices':
+                        //   fnName = _ecs.ecs_ListServices;
+                        //   break;
+                        case 'ecs_ListClusters':
+                            fnName = _ecs.ecs_ListClusters;
+                            break;
+                        case 'ecs_ListTaskDefinitions':
+                            fnName = _ecs.ecs_ListTaskDefinitions;
+                            break;
                         case 'elasticache_DescribeCacheClusters':
-                            fnName = elasticache_DescribeCacheClusters;
+                            fnName = _elasticache.elasticache_DescribeCacheClusters;
                             break;
                         case 'elasticache_DescribeReplicationGroups':
-                            fnName = elasticache_DescribeReplicationGroups;
+                            fnName = _elasticache.elasticache_DescribeReplicationGroups;
                             break;
                         case 'elasticache_DescribeCacheSubnetGroups':
-                            fnName = elasticache_DescribeCacheSubnetGroups;
+                            fnName = _elasticache.elasticache_DescribeCacheSubnetGroups;
                             break;
                         case 'elasticloadbalancing_DescribeLoadBalancers':
-                            fnName = elasticloadbalancing_DescribeLoadBalancers;
+                            fnName = _elasticloadbalancing.elasticloadbalancing_DescribeLoadBalancers;
                             break;
                         case 'iam_ListUsers':
-                            fnName = iam_ListUsers;
+                            fnName = _iam.iam_ListUsers;
                             break;
                         case 'iam_ListPolicies':
-                            fnName = iam_ListPolicies;
+                            fnName = _iam.iam_ListPolicies;
                             break;
                         case 'iam_ListRoles':
-                            fnName = iam_ListRoles;
+                            fnName = _iam.iam_ListRoles;
                             break;
                         case 'lambda_ListFunctions':
-                            fnName = lambda_ListFunctions;
+                            fnName = _lambda.lambda_ListFunctions;
                             break;
                         case 'rds_DescribeDBSubnetGroups':
-                            fnName = rds_DescribeDBSubnetGroups;
+                            fnName = _rds.rds_DescribeDBSubnetGroups;
                             break;
                         case 'rds_DescribeDBParameterGroups':
-                            fnName = rds_DescribeDBParameterGroups;
+                            fnName = _rds.rds_DescribeDBParameterGroups;
                             break;
                         case 'rds_DescribeOptionGroups':
-                            fnName = rds_DescribeOptionGroups;
+                            fnName = _rds.rds_DescribeOptionGroups;
                             break;
                         case 'rds_DescribeDBClusters':
-                            fnName = rds_DescribeDBClusters;
+                            fnName = _rds.rds_DescribeDBClusters;
                             break;
                         case 'rds_DescribeDBInstances':
-                            fnName = rds_DescribeDBInstances;
+                            fnName = _rds.rds_DescribeDBInstances;
+                            break;
+                        case 'rds_DescribeDBProxies':
+                            fnName = _rds.rds_DescribeDBProxies;
+                            break;
+                        case 'rds_DescribeDBProxyEndpoints':
+                            fnName = _rds.rds_DescribeDBProxyEndpoints;
                             break;
                         case 'route53_ListHostedZones':
-                            fnName = route53_ListHostedZones;
+                            fnName = _route53.route53_ListHostedZones;
                             break;
-                        // case 's3_ListBuckets':
-                        //     fnName = s3_ListBuckets;
-                        //     break;
+                        case 's3_ListBuckets':
+                            fnName = _s3.s3_ListBuckets;
+                            break;
+                        case 'sns_ListSubscriptions':
+                            fnName = _sns.sns_ListSubscriptions;
+                            break;
+                        case 'sns_ListTopics':
+                            fnName = _sns.sns_ListTopics;
+                            break;
                         case 'sqs_ListQueues':
-                            fnName = sqs_ListQueues;
+                            fnName = _sqs.sqs_ListQueues;
                             break;
                         default:
                             const message = `${region}/fName '${fName}' is not an inventory initatior.`;
@@ -265,8 +239,6 @@ export class AwsInventory {
 
 
                     if (fnName !== undefined) {
-
-                        // try {
 
                         fnName(region, this.credentials)
                             .then((p) => {
@@ -281,53 +253,34 @@ export class AwsInventory {
                             .catch(async (e) => {
 
                                 switch (e.name) {
+                                    case 'ValidationError':
                                     case 'AuthFailure':
-                                        console.warn(`AuthFailure: will not retry.`);
-                                        resolve(e);
-                                        break;
-
+                                    case 'AccessDenied':
+                                    case 'UnauthorizedOperation':
                                     case 'AccessDeniedException':
-                                        console.warn(`AccessDeniedException: will not retry.`);
-                                        resolve(e);
-                                        break;
-
                                     case 'InvalidClientTokenId':
-                                        console.warn(`InvalidClientTokenId: will not retry.`);
-                                        resolve(e);
-                                        break;
-
                                     case 'UnrecognizedClientException':
-                                        console.warn(`UnrecognizedClientException: will not retry.`);
+                                    case 'AuthorizationError':
+                                    case 'TypeError':
+                                        console.warn(`${e.name}: will not attempt retry.`);
                                         resolve(e);
                                         break;
-
                                     default:
-                                        console.log(`Mk.606`);
-                                        console.warn(`Problem w requestSender on Fn '${fName}' for region ${region}.`);
-                                        console.log(e.name);
-                                        console.log(Object.keys(e));
+                                        console.error(`--------> Mk.706 Problem w requestSender on Fn '${fName}' for region ${region}.`);
+                                        console.warn(e.name);
+                                        console.warn(Object.keys(e));
 
 
                                         let p;
                                         if (retry < RETRIES) {
-                                            console.log(`Mk.707`);
-                                            console.log(`Retrying, prev error was ${e.name}`);
+                                            console.log(`----------> Mk.707 Retrying, prev error was ${e.name}`);
                                             p = await requestSender(fName, retry + 1);
                                         } else {
-                                            console.log(`Mk.708`);
-                                            console.warn(`Too many retries; failing.`);
+                                            console.warn(`----------> Mk.708 Too many retries; failing.`);
                                             resolve(e);
                                         }
                                 }
                             });
-
-                        // } catch (e) {
-
-                        // console.warn(fName);
-                        // console.warn(fnName);
-                        // console.error(e);
-
-                        // }
 
                     }
                 });
@@ -336,6 +289,19 @@ export class AwsInventory {
 
             let strApiCallFn = `${strService}_${apiCall}`;
             switch (strService) {
+                case 's3':
+                    if (region === 'us-east-1') {
+                        requestSender(strApiCallFn)
+                            .then((p) => {
+                                resolve(p);
+                            })
+                            .catch((e) => {
+                                reject(e);
+                            });
+                    } else {
+                        resolve(`We don't make calls to ${strService} outside of us-east-1.`);
+                    }
+                    break;
                 case 'cloudfront':
                     if (region === 'us-east-1') {
                         requestSender(strApiCallFn)
@@ -409,7 +375,7 @@ export class AwsInventory {
             });
 
 
-            this.MAX_WAIT = Math.floor((numCalls) / 50) * 1000;
+            this.MAX_WAIT = Math.floor((numCalls) / 200) * 1000;
 
 
             let arrRequests = [];

@@ -7,9 +7,36 @@ import {
     paginateGetRestApis,
 } from '@aws-sdk/client-api-gateway';
 
-let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
-    return new Promise((resolve, reject) => {
+const SVC = 'apigateway';
 
+export function getPerms() {
+    return [
+        {
+            "service": "apigateway",
+            "call": "GetRestApis",
+            "permission": "GET",
+            "initiator": true
+        },
+        {
+            "service": "apigateway",
+            "call": "GetResources",
+            "permission": "GET",
+            "initiator": false
+        },
+        {
+            "service": "apigateway",
+            "call": "GetMethod",
+            "permission": "GET",
+            "initiator": false
+        }
+    ];
+}
+
+
+let apigateway_GetMethod = (httpMethod, resourceId, restApiId, region, credentials, client, oRC) => {
+    return new Promise(async (resolve, reject) => {
+
+        await oRC.pauser();
         client.send(new GetMethodCommand(
             {
                 httpMethod,
@@ -17,22 +44,30 @@ let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
                 restApiId,
             }
         ))
-            .then((data) => {
+            .then(async (data) => {
+                // oRC.incr(SVC);
+                data.restApiId = restApiId;
+                data.resourceId = resourceId;
                 resolve(data);
             })
-            .catch((err) => {
-                reject(err);
+            .catch(async (err) => {
+                oRC.pauser(SVC)
+                    .then((bool) => {
+
+                        apigateway_GetMethod(httpMethod, resourceId, restApiId, region, credentials, client, oRC);
+
+                    });
             });
     });
 };
 
 
-let apigateway_GetResources = (restApiId, client) => {
+let apigateway_GetResources = (restApiId, region, credentials, client, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const pConfig = {
             client,
-            pageSize: 100,
+            pageSize: 150,
         };
 
         const cmdParams = {
@@ -46,36 +81,68 @@ let apigateway_GetResources = (restApiId, client) => {
         try {
 
             for await (const page of paginator) {
-                arr.push(page.items);
+                // oRC.incr(SVC);
+                await oRC.pauser();
+                arr.push(...page.items);
             }
         } catch (e) {
-            reject(e);
+
+            switch (e.name) {
+                case 'TooManyRequestsException':
+                    oRC.pauser(SVC)
+                        .then((bool) => {
+
+                            apigateway_GetResources(restApiId, region, credentials, client, oRC);
+
+                        });
+                    break;
+                default:
+                    // console.warn(`Problem w requestSender on Fn '${fName}' for region ${region}.`);
+                    // console.log(e.name);
+                    // console.log(Object.keys(e));
+                    reject(e);
+            }
         }
 
-        const arrResources = [];
-        for (let i = 0; i < arr.length; i++) {
-            let Resource = arr[i];
-            if (Resource.Methods === undefined) {
-                Resource.Methods = [];
-            }
-            let arrResourceMethods = [];
-            if (Resource.resourceMethods !== undefined) {
-                arrResourceMethods = Object.keys(Resource.resourceMethods);
-            }
-            for (let j = 0; j < arrResourceMethods.length; j++) {
-                let METHOD = arrResourceMethods[j];
-                let oMethod = await apigateway_GetMethod(METHOD, Resource.id, restApiId, client);
-                Resource.Methods.push(oMethod);
-            }
-            arrResources.push(Resource);
-        }
 
-        resolve(arrResources);
+        let arr2 = [];
+
+
+        arr.forEach((oResource) => {
+
+            if (oResource.resourceMethods !== undefined) {
+
+                Object.keys(oResource.resourceMethods).forEach((METHOD) => {
+
+                    arr2.push(apigateway_GetMethod(METHOD, oResource.id, restApiId, region, credentials, client, oRC));
+
+                });
+
+            }
+
+        });
+
+
+        Promise.all(arr2)
+            .then((arrP) => {
+
+
+                let objGlobal = {
+                    [region]: {
+                        RestApiResources: [...arrP]
+                    }
+                };
+
+
+                resolve(objGlobal);
+
+            });
+
     });
 };
 
 
-export let apigateway_GetRestApis = (region, credentials) => {
+export let apigateway_GetRestApis = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new APIGatewayClient(
@@ -87,7 +154,7 @@ export let apigateway_GetRestApis = (region, credentials) => {
 
         const pConfig = {
             client,
-            pageSize: 100,
+            pageSize: 200,
         };
 
         const cmdParams = {};
@@ -99,24 +166,41 @@ export let apigateway_GetRestApis = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr(SVC);
+                await oRC.pauser();
                 arr.push(...page.items)
             }
         } catch (e) {
             reject(e);
         }
 
-        for (let i = 0; i < arr.length; i++) {
-            let RestApi = arr[i];
-            const arrResources = await apigateway_GetResources(RestApi.id, client);
-            arr[i].Resources = arrResources;
-        }
 
-        let obj = {
+        let objGlobal = {
             [region]: {
                 RestApis: arr
             }
         };
-        resolve(obj);
+
+
+        let arr2 = [];
+
+
+        arr.forEach(async (objRestApi) => {
+            arr2.push(apigateway_GetResources(objRestApi.id, region, credentials, client, oRC));
+        });
+
+
+        Promise.all(arr2)
+            .then((arrP) => {
+
+                let obj = {
+                    [region]: {
+                        RestApis: [...arrP]
+                    }
+                };
+                resolve(obj);
+
+            });
 
     });
 };

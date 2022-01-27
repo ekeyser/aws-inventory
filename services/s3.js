@@ -3,10 +3,23 @@
 import axios from 'axios';
 import sha256 from 'sha256';
 import crypto from 'crypto-js';
+import {ListBucketsCommand, S3Client} from "@aws-sdk/client-s3";
+
+
+export function getPerms() {
+    return [
+        {
+            "service": "s3",
+            "call": "ListBuckets",
+            "permission": "ListAllMyBuckets",
+            "initiator": true
+        }
+    ];
+};
+
 
 export let s3_ListBuckets = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
-
 
         const AWS_SIG_VER = 'aws4_request';
         const AWS_ACCESS_KEY_ID = credentials.accessKeyId;
@@ -25,6 +38,7 @@ export let s3_ListBuckets = (region, credentials, oRC) => {
 
         let getS3HashedCanonicalRequest = (httpMethod, canonicalUri, signedHeaders, queryString, canonicalHeaders, hashed_payload) => {
 
+            // let timestamp = `${TS}\n`;
             let method = `${httpMethod}\n`;
             let uri = `${canonicalUri}\n`;
             let query_string = `${queryString}\n`;
@@ -46,7 +60,9 @@ export let s3_ListBuckets = (region, credentials, oRC) => {
                     signed_headers += `;${header_name}`;
                 }
             });
+            // signed_headers += `\n`;
 
+            // let str = `${method}${uri}${query_string}${canonical_headers}${host}${date_header}${signed_headers}${hashed_payload}`;
             let str = `${method}${uri}${query_string}${canonical_headers}${signed_headers}\n${hashed_payload}`;
 
             let hash = sha256(str);
@@ -55,6 +71,7 @@ export let s3_ListBuckets = (region, credentials, oRC) => {
         };
 
 
+        const bucket = ``;
         let strUri = '';
         let canonicalUri = `/${encodeURIComponent(strUri)}`;
 
@@ -130,15 +147,16 @@ export let s3_ListBuckets = (region, credentials, oRC) => {
 
         let blob = Buffer.from(JSON.stringify(someObj)).toString('base64');
 
-        // TODO resolve this dev setting
-        const s3HelperUrl = 'http://localhost:3000/s3helper/';
-        axios.post(s3HelperUrl, {
+        // resolve(blob);
+        const rampartUrl = 'http://localhost:3000/s3helper/';
+        axios.post(rampartUrl, {
             blob
         }, {})
             .then((response) => {
 
+                // const response = await axios.get(url, config);
                 const b64Resp = response.data;
-                const responseData = Buffer.from(b64Resp.data, 'base64').toString('ascii');
+                let responseData = Buffer.from(b64Resp.data, 'base64').toString('ascii');
                 const objResponseData = JSON.parse(responseData);
                 let obj = {
                     [region]: {

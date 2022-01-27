@@ -7,7 +7,26 @@ import {
     paginateDescribeLaunchConfigurations
 } from "@aws-sdk/client-auto-scaling";
 
-export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "autoscaling",
+            "call": "DescribeLaunchConfigurations",
+            "permission": "DescribeLaunchConfigurations",
+            "initiator": true
+        },
+        {
+            "service": "autoscaling",
+            "call": "DescribeAutoScalingGroups",
+            "permission": "DescribeAutoScalingGroups",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let autoscaling_DescribeAutoScalingGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(
@@ -31,9 +50,11 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.AutoScalingGroups);
             }
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -49,7 +70,7 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
 };
 
 
-export let autoscaling_DescribeLaunchConfigurations = (region, credentials) => {
+export let autoscaling_DescribeLaunchConfigurations = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(
@@ -73,10 +94,12 @@ export let autoscaling_DescribeLaunchConfigurations = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.LaunchConfigurations);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

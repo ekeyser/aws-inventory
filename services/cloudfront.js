@@ -6,7 +6,26 @@ import {
     paginateListDistributions
 } from "@aws-sdk/client-cloudfront";
 
-export let cloudfront_ListCachePolicies = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "cloudfront",
+            "call": "ListCachePolicies",
+            "permission": "ListCachePolicies",
+            "initiator": true
+        },
+        {
+            "service": "cloudfront",
+            "call": "ListDistributions",
+            "permission": "ListDistributions",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let cloudfront_ListCachePolicies = (region, credentials, oRC) => {
     return new Promise((resolve, reject) => {
 
         const client = new CloudFrontClient(
@@ -24,6 +43,7 @@ export let cloudfront_ListCachePolicies = (region, credentials) => {
 
         client.send(new ListCachePoliciesCommand({}))
             .then((data) => {
+                // oRC.incr();
                 data.CachePolicyList.Items.forEach((cachePolicy) => {
                     // if (this.objGlobal[region].CachePolicies === undefined) {
                     //     this.objGlobal[region].CachePolicies = [];
@@ -37,13 +57,14 @@ export let cloudfront_ListCachePolicies = (region, credentials) => {
                 resolve(obj);
             })
             .catch((e) => {
+                // oRC.incr();
                 reject(e);
             });
     });
 };
 
 
-export let cloudfront_ListDistributions = (region, credentials) => {
+export let cloudfront_ListDistributions = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new CloudFrontClient(
@@ -67,9 +88,11 @@ export let cloudfront_ListDistributions = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.DistributionList.Items);
             }
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

@@ -2,7 +2,20 @@
 
 import {CloudWatchClient, paginateDescribeAlarms} from "@aws-sdk/client-cloudwatch";
 
-export let cloudwatch_DescribeAlarms = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "cloudwatch",
+            "call": "DescribeAlarms",
+            "permission": "DescribeAlarms",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let cloudwatch_DescribeAlarms = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new CloudWatchClient(
@@ -26,10 +39,12 @@ export let cloudwatch_DescribeAlarms = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.MetricAlarms);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

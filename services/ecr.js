@@ -2,7 +2,20 @@
 
 import {ECRClient, paginateDescribeRepositories} from "@aws-sdk/client-ecr";
 
-export let ecr_DescribeRepositories = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "ecr",
+            "call": "DescribeRepositories",
+            "permission": "DescribeRepositories",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let ecr_DescribeRepositories = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ECRClient(
@@ -26,9 +39,11 @@ export let ecr_DescribeRepositories = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.repositories);
             }
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].ECRRepositories = arr;

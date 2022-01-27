@@ -6,7 +6,32 @@ import {
     paginateDescribeCacheSubnetGroups, paginateDescribeReplicationGroups
 } from "@aws-sdk/client-elasticache";
 
-export let elasticache_DescribeCacheClusters = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "elasticache",
+            "call": "DescribeCacheClusters",
+            "permission": "DescribeCacheClusters",
+            "initiator": true
+        },
+        {
+            "service": "elasticache",
+            "call": "DescribeReplicationGroups",
+            "permission": "DescribeReplicationGroups",
+            "initiator": true
+        },
+        {
+            "service": "elasticache",
+            "call": "DescribeCacheSubnetGroups",
+            "permission": "DescribeCacheSubnetGroups",
+            "initiator": true
+        }
+    ];
+};
+
+
+export let elasticache_DescribeCacheClusters = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -33,9 +58,11 @@ export let elasticache_DescribeCacheClusters = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.CacheClusters);
             }
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -51,7 +78,7 @@ export let elasticache_DescribeCacheClusters = (region, credentials) => {
 };
 
 
-export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
+export let elasticache_DescribeCacheSubnetGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -75,10 +102,12 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.CacheSubnetGroups);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -94,7 +123,7 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
 };
 
 
-export let elasticache_DescribeReplicationGroups = (region, credentials) => {
+export let elasticache_DescribeReplicationGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -118,10 +147,12 @@ export let elasticache_DescribeReplicationGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.ReplicationGroups);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

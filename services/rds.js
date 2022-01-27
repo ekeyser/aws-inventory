@@ -5,10 +5,278 @@ import {
     paginateDescribeDBParameterGroups,
     paginateDescribeDBSubnetGroups,
     paginateDescribeOptionGroups,
+    paginateDescribeDBProxies,
+    paginateDescribeDBProxyEndpoints,
+    paginateDescribeDBProxyTargetGroups,
+    paginateDescribeDBProxyTargets,
     RDSClient
 } from "@aws-sdk/client-rds";
 
-export let rds_DescribeDBSubnetGroups = (region, credentials) => {
+
+export function getPerms() {
+    return [
+        {
+            "service": "rds",
+            "call": "DescribeDBSubnetGroups",
+            "permission": "DescribeDBSubnetGroups",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBParameterGroups",
+            "permission": "DescribeDBParameterGroups",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeOptionGroups",
+            "permission": "DescribeOptionGroups",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBClusters",
+            "permission": "DescribeDBClusters",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBInstances",
+            "permission": "DescribeDBInstances",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBProxies",
+            "permission": "DescribeDBProxies",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBProxyEndpoints",
+            "permission": "DescribeDBProxyEndpoints",
+            "initiator": true
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBProxyTargets",
+            "permission": "DescribeDBProxyTargets",
+            "initiator": false
+        },
+        {
+            "service": "rds",
+            "call": "DescribeDBProxyTargetGroups",
+            "permission": "DescribeDBProxyTargetGroups",
+            "initiator": false
+        }
+    ];
+};
+
+
+let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, oRC) => {
+    return new Promise(async (resolve, reject) => {
+
+        const client = new RDSClient(
+            {
+                region,
+                credentials,
+            }
+        );
+
+        const pConfig = {
+            client,
+            pageSize: 100,
+        };
+
+        const cmdParams = {
+            DBProxyName
+        };
+
+        const paginator = paginateDescribeDBProxyTargetGroups(pConfig, cmdParams);
+
+        const arr = [];
+
+        try {
+
+            for await (const page of paginator) {
+                // oRC.incr();
+                arr.push(...page.TargetGroups);
+            }
+
+        } catch (e) {
+            // oRC.incr();
+            reject(e);
+        }
+
+        let objGlobal = {
+            [region]: {
+                DBTargetGroups: arr
+            }
+        };
+        resolve(objGlobal);
+    });
+};
+
+
+let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, oRC) => {
+    return new Promise(async (resolve, reject) => {
+
+        const client = new RDSClient(
+            {
+                region,
+                credentials,
+            }
+        );
+
+        const pConfig = {
+            client,
+            pageSize: 100,
+        };
+
+        const cmdParams = {
+            DBProxyName
+        };
+
+        const paginator = paginateDescribeDBProxyTargets(pConfig, cmdParams);
+
+        const arr = [];
+
+        try {
+
+            for await (const page of paginator) {
+                // oRC.incr();
+                arr.push(...page.Targets);
+            }
+
+        } catch (e) {
+            // oRC.incr();
+            reject(e);
+        }
+
+        let objGlobal = {
+            [region]: {
+                DBTargets: arr
+            }
+        };
+        resolve(objGlobal);
+    });
+};
+
+
+export let rds_DescribeDBProxyEndpoints = (region, credentials, oRC) => {
+    return new Promise(async (resolve, reject) => {
+
+        const client = new RDSClient(
+            {
+                region,
+                credentials,
+            }
+        );
+
+        const pConfig = {
+            client,
+            pageSize: 100,
+        };
+
+        const cmdParams = {};
+
+        const paginator = paginateDescribeDBProxyEndpoints(pConfig, cmdParams);
+
+        const arr = [];
+
+        try {
+
+            for await (const page of paginator) {
+                // oRC.incr();
+                arr.push(...page.DBProxyEndpoints);
+            }
+
+        } catch (e) {
+            // oRC.incr();
+            reject(e);
+        }
+
+        let objGlobal = {
+            [region]: {
+                DBProxyEndpoints: arr
+            }
+        };
+        resolve(objGlobal);
+    });
+};
+
+
+export let rds_DescribeDBProxies = (region, credentials, oRC) => {
+    return new Promise(async (resolve, reject) => {
+
+        const client = new RDSClient(
+            {
+                region,
+                credentials,
+            }
+        );
+
+        const pConfig = {
+            client,
+            pageSize: 100,
+        };
+
+        const cmdParams = {};
+
+        const paginator = paginateDescribeDBProxies(pConfig, cmdParams);
+
+        const arr = [];
+
+        try {
+
+            for await (const page of paginator) {
+                // oRC.incr();
+                arr.push(...page.DBProxies);
+            }
+
+        } catch (e) {
+            // oRC.incr();
+            reject(e);
+        }
+
+
+        let objGlobal = {
+            [region]: {
+                DBProxies: arr
+            }
+        };
+
+
+        let arr2 = [];
+        arr.forEach((objProxy, i) => {
+            arr2.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials, oRC));
+            arr2.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials, oRC));
+        });
+
+
+        Promise.all(arr2)
+            .then((arrP) => {
+
+                arrP.forEach((obj) => {
+                    Object.keys(obj[region]).forEach((sResourceType) => {
+                        let aResources = obj[region][sResourceType];
+                        if (objGlobal[region][sResourceType] !== undefined) {
+                            objGlobal[region][sResourceType].push(...aResources);
+                        } else {
+                            objGlobal[region][sResourceType] = aResources;
+                        }
+                    });
+                });
+
+                resolve(objGlobal);
+
+            });
+
+    });
+};
+
+
+export let rds_DescribeDBSubnetGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -32,10 +300,12 @@ export let rds_DescribeDBSubnetGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.DBSubnetGroups);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -51,7 +321,7 @@ export let rds_DescribeDBSubnetGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBParameterGroups = (region, credentials) => {
+export let rds_DescribeDBParameterGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -75,10 +345,12 @@ export let rds_DescribeDBParameterGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.DBParameterGroups);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -94,7 +366,7 @@ export let rds_DescribeDBParameterGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeOptionGroups = (region, credentials) => {
+export let rds_DescribeOptionGroups = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -118,10 +390,12 @@ export let rds_DescribeOptionGroups = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.OptionGroupsList);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -137,7 +411,7 @@ export let rds_DescribeOptionGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBClusters = (region, credentials) => {
+export let rds_DescribeDBClusters = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -161,10 +435,12 @@ export let rds_DescribeDBClusters = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.DBClusters);
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -180,7 +456,7 @@ export let rds_DescribeDBClusters = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBInstances = (region, credentials) => {
+export let rds_DescribeDBInstances = (region, credentials, oRC) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -204,9 +480,11 @@ export let rds_DescribeDBInstances = (region, credentials) => {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 arr.push(...page.DBInstances);
             }
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 

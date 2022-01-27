@@ -6,7 +6,26 @@ import {
     paginateListQueues,
 } from '@aws-sdk/client-sqs';
 
-export function sqs_GetQueueAttributes(QueueUrl, client) {
+
+export function getPerms() {
+    return [
+        {
+            "service": "sqs",
+            "call": "GetQueueAttributes",
+            "permission": "GetQueueAttributes",
+            "initiator": false
+        },
+        {
+            "service": "sqs",
+            "call": "ListQueues",
+            "permission": "ListQueues",
+            "initiator": true
+        }
+    ];
+};
+
+
+export function sqs_GetQueueAttributes(QueueUrl, client, oRC) {
     return new Promise((resolve, reject) => {
 
         client.send(new GetQueueAttributesCommand(
@@ -18,16 +37,18 @@ export function sqs_GetQueueAttributes(QueueUrl, client) {
             }
         ))
             .then((data) => {
+                // oRC.incr();
                 resolve(data);
             })
             .catch((err) => {
+                // oRC.incr();
                 reject(err);
             });
     });
 }
 
 
-export function sqs_ListQueues(region, credentials) {
+export function sqs_ListQueues(region, credentials, oRC) {
     return new Promise(async (resolve, reject) => {
 
         let client = new SQSClient({
@@ -49,12 +70,14 @@ export function sqs_ListQueues(region, credentials) {
         try {
 
             for await (const page of paginator) {
+                // oRC.incr();
                 if (page.QueueUrls !== undefined) {
                     arr.push(...page.QueueUrls);
                 }
             }
 
         } catch (e) {
+            // oRC.incr();
             reject(e);
         }
 
@@ -62,7 +85,7 @@ export function sqs_ListQueues(region, credentials) {
 
         for (let i = 0; i < arr.length; i++) {
             let QueueUrl = arr[i];
-            let Queue = await sqs_GetQueueAttributes(QueueUrl, client);
+            let Queue = await sqs_GetQueueAttributes(QueueUrl, client, oRC);
             Queue.Attributes.QueueUrl = QueueUrl;
             arrQueues.push(Queue);
         }
