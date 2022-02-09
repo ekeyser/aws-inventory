@@ -188,9 +188,7 @@ export let apigateway_GetRestApis = (region, credentials) => {
 
 
         arr.forEach((objRestApi, i) => {
-            if (i < 10) {
-                arrPromisesR.push(apigateway_GetResources(objRestApi.id, client));
-            }
+            arrPromisesR.push(apigateway_GetResources(objRestApi.id, client));
         });
 
 
