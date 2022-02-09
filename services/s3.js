@@ -3,8 +3,6 @@
 import axios from 'axios';
 import sha256 from 'sha256';
 import crypto from 'crypto-js';
-import {ListBucketsCommand, S3Client} from "@aws-sdk/client-s3";
-
 
 export function getPerms() {
     return [
@@ -18,7 +16,7 @@ export function getPerms() {
 };
 
 
-export let s3_ListBuckets = (region, credentials, oRC) => {
+export let s3_ListBuckets = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const AWS_SIG_VER = 'aws4_request';

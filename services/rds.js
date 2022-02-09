@@ -73,7 +73,7 @@ export function getPerms() {
 };
 
 
-let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, oRC) => {
+let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -99,12 +99,10 @@ let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, oRC) =>
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.TargetGroups);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -118,7 +116,7 @@ let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, oRC) =>
 };
 
 
-let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, oRC) => {
+let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -144,12 +142,10 @@ let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Targets);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -163,7 +159,7 @@ let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBProxyEndpoints = (region, credentials, oRC) => {
+export let rds_DescribeDBProxyEndpoints = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -187,12 +183,10 @@ export let rds_DescribeDBProxyEndpoints = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBProxyEndpoints);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -206,7 +200,7 @@ export let rds_DescribeDBProxyEndpoints = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBProxies = (region, credentials, oRC) => {
+export let rds_DescribeDBProxies = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -230,12 +224,10 @@ export let rds_DescribeDBProxies = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBProxies);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -249,8 +241,8 @@ export let rds_DescribeDBProxies = (region, credentials, oRC) => {
 
         let arr2 = [];
         arr.forEach((objProxy, i) => {
-            arr2.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials, oRC));
-            arr2.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials, oRC));
+            arr2.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials));
+            arr2.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials));
         });
 
 
@@ -276,7 +268,7 @@ export let rds_DescribeDBProxies = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBSubnetGroups = (region, credentials, oRC) => {
+export let rds_DescribeDBSubnetGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -300,12 +292,10 @@ export let rds_DescribeDBSubnetGroups = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBSubnetGroups);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -321,7 +311,7 @@ export let rds_DescribeDBSubnetGroups = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBParameterGroups = (region, credentials, oRC) => {
+export let rds_DescribeDBParameterGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -345,12 +335,10 @@ export let rds_DescribeDBParameterGroups = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBParameterGroups);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -366,7 +354,7 @@ export let rds_DescribeDBParameterGroups = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeOptionGroups = (region, credentials, oRC) => {
+export let rds_DescribeOptionGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -390,12 +378,10 @@ export let rds_DescribeOptionGroups = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.OptionGroupsList);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -411,7 +397,7 @@ export let rds_DescribeOptionGroups = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBClusters = (region, credentials, oRC) => {
+export let rds_DescribeDBClusters = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -435,12 +421,10 @@ export let rds_DescribeDBClusters = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBClusters);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -456,7 +440,7 @@ export let rds_DescribeDBClusters = (region, credentials, oRC) => {
 };
 
 
-export let rds_DescribeDBInstances = (region, credentials, oRC) => {
+export let rds_DescribeDBInstances = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -480,11 +464,9 @@ export let rds_DescribeDBInstances = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DBInstances);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

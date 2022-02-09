@@ -18,7 +18,7 @@ export function getPerms() {
 };
 
 
-export let route53_ListHostedZones = (region, credentials, oRC) => {
+export let route53_ListHostedZones = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new Route53Client({
@@ -40,11 +40,9 @@ export let route53_ListHostedZones = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.HostedZones);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

@@ -60,7 +60,7 @@ export function getPerms() {
 };
 
 
-export function ec2_DescribeAvailabilityZones(region, credentials, oRC) {
+export function ec2_DescribeAvailabilityZones(region, credentials) {
     return new Promise((resolve, reject) => {
 
         let client = new EC2Client({
@@ -71,7 +71,6 @@ export function ec2_DescribeAvailabilityZones(region, credentials, oRC) {
         let arr = [];
         client.send(new DescribeAvailabilityZonesCommand({}))
             .then((data) => {
-                // oRC.incr();
                 for (let i = 0; i < data.AvailabilityZones.length; i++) {
                     let AvailabilityZone = data.AvailabilityZones[i];
                     arr.push(AvailabilityZone);
@@ -92,14 +91,13 @@ export function ec2_DescribeAvailabilityZones(region, credentials, oRC) {
                 resolve(objGlobal);
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
     });
 }
 
 
-export function ec2_DescribeRouteTables(region, credentials, oRC) {
+export function ec2_DescribeRouteTables(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -121,12 +119,10 @@ export function ec2_DescribeRouteTables(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.RouteTables);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -143,7 +139,7 @@ export function ec2_DescribeRouteTables(region, credentials, oRC) {
 }
 
 
-export function ec2_DescribeVolumes(region, credentials, oRC) {
+export function ec2_DescribeVolumes(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -165,11 +161,9 @@ export function ec2_DescribeVolumes(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Volumes);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].Volumes = arr;
@@ -184,7 +178,7 @@ export function ec2_DescribeVolumes(region, credentials, oRC) {
 }
 
 
-export function ec2_DescribeVpcs(region, credentials, oRC) {
+export function ec2_DescribeVpcs(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -206,11 +200,9 @@ export function ec2_DescribeVpcs(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Vpcs);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].Vpcs = arr;
@@ -225,7 +217,7 @@ export function ec2_DescribeVpcs(region, credentials, oRC) {
 }
 
 
-export function ec2_DescribeSubnets(region, credentials, oRC) {
+export function ec2_DescribeSubnets(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -247,12 +239,10 @@ export function ec2_DescribeSubnets(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Subnets);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -269,7 +259,7 @@ export function ec2_DescribeSubnets(region, credentials, oRC) {
 }
 
 
-export function ec2_DescribeInstances(region, credentials, oRC) {
+export function ec2_DescribeInstances(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -291,14 +281,12 @@ export function ec2_DescribeInstances(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 page.Reservations.forEach((reservation) => {
                     arr.push(...reservation.Instances)
                 });
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -315,7 +303,7 @@ export function ec2_DescribeInstances(region, credentials, oRC) {
 }
 
 
-export function ec2_DescribeSecurityGroups(region, credentials, oRC) {
+export function ec2_DescribeSecurityGroups(region, credentials) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -337,11 +325,9 @@ export function ec2_DescribeSecurityGroups(region, credentials, oRC) {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.SecurityGroups)
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].SecurityGroups = arr;

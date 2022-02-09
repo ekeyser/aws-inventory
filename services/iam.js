@@ -60,7 +60,7 @@ export function getPerms() {
 };
 
 
-let iam_GetUserPolicy = (user, policies, client, oRC, MAX_WAIT) => {
+let iam_GetUserPolicy = (user, policies, client) => {
     return new Promise((resolve, reject) => {
 
         let arrPromises = [];
@@ -75,19 +75,6 @@ let iam_GetUserPolicy = (user, policies, client, oRC, MAX_WAIT) => {
 
             arrPromises.push(client.send(new GetUserPolicyCommand(oParams))
                 .then((data) => {
-                    // oRC.incr();
-                    // if (this.objGlobal[region].PolicyDocuments === undefined) {
-                    //     this.objGlobal[region].PolicyDocuments = [];
-                    // }
-
-                    // this.objGlobal[region].PolicyDocuments.push(
-                    //     {
-                    //         UserId: user.UserId,
-                    //         Document: data.PolicyDocument,
-                    //     }
-                    // );
-                    // this.policyDocuments.push(data.PolicyDocument);
-                    // resolve(`${region}/iam_GetUserPolicy`);
                     resolve({
                         UserId: user.UserId,
                         Document: data.PolicyDocument,
@@ -95,7 +82,6 @@ let iam_GetUserPolicy = (user, policies, client, oRC, MAX_WAIT) => {
 
                 })
                 .catch((e) => {
-                    // oRC.incr();
                     reject(e);
                 }));
 
@@ -108,7 +94,7 @@ let iam_GetUserPolicy = (user, policies, client, oRC, MAX_WAIT) => {
     });
 };
 
-let iam_ListUserPolicies = (users, client, oRC, MAX_WAIT) => {
+let iam_ListUserPolicies = (users, client) => {
     return new Promise((resolve, reject) => {
 
         const pConfig = {
@@ -130,18 +116,16 @@ let iam_ListUserPolicies = (users, client, oRC, MAX_WAIT) => {
             try {
 
                 for await (const page of paginator) {
-                    // oRC.incr();
                     arr.push(...page.PolicyNames);
                 }
             } catch (e) {
-                // oRC.incr();
                 reject(e);
             }
             // this.arrUserPolicies = arr;
 
             let arrPromises = [];
             if (arr.length > 0) {
-                arrPromises.push(iam_GetUserPolicy(user, arr, client, oRC));
+                arrPromises.push(iam_GetUserPolicy(user, arr, client));
             }
 
             Promise.all(arrPromises)
@@ -155,7 +139,7 @@ let iam_ListUserPolicies = (users, client, oRC, MAX_WAIT) => {
     });
 };
 
-export let iam_ListUsers = (region, credentials, oRC, MAX_WAIT) => {
+export let iam_ListUsers = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -177,11 +161,9 @@ export let iam_ListUsers = (region, credentials, oRC, MAX_WAIT) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Users);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].Users = arr;
@@ -191,7 +173,7 @@ export let iam_ListUsers = (region, credentials, oRC, MAX_WAIT) => {
             }
         };
 
-        iam_ListUserPolicies(arr, client, oRC)
+        iam_ListUserPolicies(arr, client)
             .then((obj) => {
                 // resolve(`${region}/iam_ListUsers`);
                 resolve(objGlobal);
@@ -200,7 +182,7 @@ export let iam_ListUsers = (region, credentials, oRC, MAX_WAIT) => {
 };
 
 
-let iam_GetPolicyVersion = (policy, client, oRC, MAX_WAIT) => {
+let iam_GetPolicyVersion = (policy, client) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -213,7 +195,6 @@ let iam_GetPolicyVersion = (policy, client, oRC, MAX_WAIT) => {
         // let arr = [];
         client.send(new GetPolicyVersionCommand(oParams))
             .then((data) => {
-                // oRC.incr();
                 // if (this.objGlobal[region].PolicyDocuments === undefined) {
                 //     this.objGlobal[region].PolicyDocuments = [];
                 // }
@@ -243,7 +224,6 @@ let iam_GetPolicyVersion = (policy, client, oRC, MAX_WAIT) => {
 
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
 
@@ -251,7 +231,7 @@ let iam_GetPolicyVersion = (policy, client, oRC, MAX_WAIT) => {
 };
 
 
-let iam_GetPolicy = (policy, client, oRC, MAX_WAIT) => {
+let iam_GetPolicy = (policy, client) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -262,15 +242,13 @@ let iam_GetPolicy = (policy, client, oRC, MAX_WAIT) => {
         client.send(new GetPolicyCommand(oParams))
             .then((data) => {
 
-                // oRC.incr();
-                iam_GetPolicyVersion(data.Policy, client, oRC)
+                iam_GetPolicyVersion(data.Policy, client)
                     .then((p) => {
                         resolve(p);
                     });
 
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
 
@@ -279,7 +257,7 @@ let iam_GetPolicy = (policy, client, oRC, MAX_WAIT) => {
 };
 
 
-export let iam_ListPolicies = (region, credentials, oRC, MAX_WAIT) => {
+export let iam_ListPolicies = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -303,11 +281,9 @@ export let iam_ListPolicies = (region, credentials, oRC, MAX_WAIT) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Policies);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -316,7 +292,7 @@ export let iam_ListPolicies = (region, credentials, oRC, MAX_WAIT) => {
 
 
         arr.forEach((policy) => {
-            arrPromises.push(iam_GetPolicy(policy, client, oRC));
+            arrPromises.push(iam_GetPolicy(policy, client));
         });
 
         Promise.all(arrPromises)
@@ -335,7 +311,7 @@ export let iam_ListPolicies = (region, credentials, oRC, MAX_WAIT) => {
 };
 
 
-export let iam_ListRoles = (region, credentials, oRC, MAX_WAIT) => {
+export let iam_ListRoles = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -356,11 +332,9 @@ export let iam_ListRoles = (region, credentials, oRC, MAX_WAIT) => {
 
         try {
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.Roles);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

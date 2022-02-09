@@ -21,7 +21,7 @@ export function getPerms() {
 };
 
 
-let dynamodb_DescribeTable = (TableName, client, oRC) => {
+let dynamodb_DescribeTable = (TableName, client) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeTableCommand(
@@ -30,18 +30,16 @@ let dynamodb_DescribeTable = (TableName, client, oRC) => {
             }
         ))
             .then((data) => {
-                // oRC.incr();
                 resolve(data.Table);
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
     });
 };
 
 
-export let dynamodb_ListTables = (region, credentials, oRC) => {
+export let dynamodb_ListTables = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new DynamoDBClient(
@@ -65,11 +63,9 @@ export let dynamodb_ListTables = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.TableNames);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -77,7 +73,7 @@ export let dynamodb_ListTables = (region, credentials, oRC) => {
 
         for (let i = 0; i < arr.length; i++) {
             let TableName = arr[i];
-            let Table = await dynamodb_DescribeTable(TableName, client, oRC);
+            let Table = await dynamodb_DescribeTable(TableName, client);
             Tables.push(Table);
         }
 

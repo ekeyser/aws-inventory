@@ -20,6 +20,7 @@ import * as _lambda from "./services/lambda";
 import * as _rds from "./services/rds";
 import * as _route53 from "./services/route53";
 import * as _s3 from "./services/s3";
+import * as _states from './services/states';
 import * as _sqs from './services/sqs';
 import * as _sns from './services/sns';
 import * as _sts from "./services/sts";
@@ -54,6 +55,7 @@ export class AwsInventory {
             'rds',
             'route53',
             's3',
+            'states',
             'sns',
             'sqs',
             'sts'
@@ -163,9 +165,6 @@ export class AwsInventory {
                         case 'ecr_DescribeRepositories':
                             fnName = _ecr.ecr_DescribeRepositories;
                             break;
-                        // case 'ecs_ListServices':
-                        //   fnName = _ecs.ecs_ListServices;
-                        //   break;
                         case 'ecs_ListClusters':
                             fnName = _ecs.ecs_ListClusters;
                             break;
@@ -229,6 +228,15 @@ export class AwsInventory {
                         case 'sns_ListTopics':
                             fnName = _sns.sns_ListTopics;
                             break;
+                        case 'states_ListActivities':
+                            fnName = _states.states_ListActivities;
+                            break;
+                        // case 'states_ListExecutions':
+                        //   fnName = _states.states_ListExecutions;
+                        //   break;
+                        case 'states_ListStateMachines':
+                            fnName = _states.states_ListStateMachines;
+                            break;
                         case 'sqs_ListQueues':
                             fnName = _sqs.sqs_ListQueues;
                             break;
@@ -262,21 +270,20 @@ export class AwsInventory {
                                     case 'UnrecognizedClientException':
                                     case 'AuthorizationError':
                                     case 'TypeError':
-                                        console.warn(`${e.name}: will not attempt retry.`);
+                                        // console.warn(`${e.name}: will not attempt retry.`);
                                         resolve(e);
                                         break;
                                     default:
-                                        console.error(`--------> Mk.706 Problem w requestSender on Fn '${fName}' for region ${region}.`);
-                                        console.warn(e.name);
-                                        console.warn(Object.keys(e));
-
+                                        // console.error(`--------> Mk.706 Problem w requestSender on Fn '${fName}' for region ${region}.`);
+                                        // console.warn(e.name);
+                                        // console.warn(Object.keys(e));
 
                                         let p;
                                         if (retry < RETRIES) {
-                                            console.log(`----------> Mk.707 Retrying, prev error was ${e.name}`);
+                                            // console.log(`----------> Mk.707 Retrying, prev error was ${e.name}`);
                                             p = await requestSender(fName, retry + 1);
                                         } else {
-                                            console.warn(`----------> Mk.708 Too many retries; failing.`);
+                                            // console.warn(`----------> Mk.708 Too many retries; failing.`);
                                             resolve(e);
                                         }
                                 }
@@ -415,7 +422,6 @@ export class AwsInventory {
                 })
                 .catch((e) => {
 
-                    console.error(e);
                     let obj = {
                         Account,
                         cloudProviderName: 'aws',

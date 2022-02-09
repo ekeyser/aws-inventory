@@ -26,7 +26,7 @@ export function getPerms() {
 };
 
 
-export let autoscaling_DescribeAutoScalingGroups = (region, credentials, oRC) => {
+export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(
@@ -50,11 +50,9 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials, oRC) =>
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.AutoScalingGroups);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -70,7 +68,7 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials, oRC) =>
 };
 
 
-export let autoscaling_DescribeLaunchConfigurations = (region, credentials, oRC) => {
+export let autoscaling_DescribeLaunchConfigurations = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(
@@ -94,12 +92,10 @@ export let autoscaling_DescribeLaunchConfigurations = (region, credentials, oRC)
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.LaunchConfigurations);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

@@ -31,7 +31,7 @@ export function getPerms() {
 };
 
 
-export let elasticache_DescribeCacheClusters = (region, credentials, oRC) => {
+export let elasticache_DescribeCacheClusters = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -58,11 +58,9 @@ export let elasticache_DescribeCacheClusters = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.CacheClusters);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -78,7 +76,7 @@ export let elasticache_DescribeCacheClusters = (region, credentials, oRC) => {
 };
 
 
-export let elasticache_DescribeCacheSubnetGroups = (region, credentials, oRC) => {
+export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -102,12 +100,10 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials, oRC) =>
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.CacheSubnetGroups);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -123,7 +119,7 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials, oRC) =>
 };
 
 
-export let elasticache_DescribeReplicationGroups = (region, credentials, oRC) => {
+export let elasticache_DescribeReplicationGroups = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -147,12 +143,10 @@ export let elasticache_DescribeReplicationGroups = (region, credentials, oRC) =>
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.ReplicationGroups);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

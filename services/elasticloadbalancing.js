@@ -30,7 +30,7 @@ export function getPerms() {
 };
 
 
-let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client, oRC) => {
+let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeLoadBalancerAttributesCommand(
@@ -39,18 +39,16 @@ let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client,
             }
         ))
             .then((data) => {
-                // oRC.incr();
                 resolve(data.Attributes);
             })
             .catch((err) => {
-                // oRC.incr();
                 reject(err);
             });
     });
 };
 
 
-export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, oRC) => {
+export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElasticLoadBalancingV2Client(
@@ -74,11 +72,9 @@ export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, oR
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.LoadBalancers);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         const arrLoadBalancers = [];

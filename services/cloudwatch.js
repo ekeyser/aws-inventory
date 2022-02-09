@@ -15,7 +15,7 @@ export function getPerms() {
 };
 
 
-export let cloudwatch_DescribeAlarms = (region, credentials, oRC) => {
+export let cloudwatch_DescribeAlarms = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new CloudWatchClient(
@@ -39,12 +39,10 @@ export let cloudwatch_DescribeAlarms = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.MetricAlarms);
             }
 
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

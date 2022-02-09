@@ -15,7 +15,7 @@ export function getPerms() {
 };
 
 
-export let ecr_DescribeRepositories = (region, credentials, oRC) => {
+export let ecr_DescribeRepositories = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ECRClient(
@@ -39,11 +39,9 @@ export let ecr_DescribeRepositories = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.repositories);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
         // this.objGlobal[region].ECRRepositories = arr;

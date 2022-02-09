@@ -7,7 +7,7 @@ import {
     paginateGetRestApis,
 } from '@aws-sdk/client-api-gateway';
 
-const SVC = 'apigateway';
+let calls = 0;
 
 export function getPerms() {
     return [
@@ -33,10 +33,14 @@ export function getPerms() {
 }
 
 
-let apigateway_GetMethod = (httpMethod, resourceId, restApiId, region, credentials, client, oRC) => {
+let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client, WAIT) => {
     return new Promise(async (resolve, reject) => {
 
-        await oRC.pauser();
+        if (WAIT === undefined) {
+            WAIT = 500;
+        }
+        WAIT += Math.random() * 1000;
+
         client.send(new GetMethodCommand(
             {
                 httpMethod,
@@ -44,26 +48,41 @@ let apigateway_GetMethod = (httpMethod, resourceId, restApiId, region, credentia
                 restApiId,
             }
         ))
-            .then(async (data) => {
-                // oRC.incr(SVC);
+            .then((data) => {
+                calls++;
                 data.restApiId = restApiId;
                 data.resourceId = resourceId;
                 resolve(data);
             })
-            .catch(async (err) => {
-                oRC.pauser(SVC)
-                    .then((bool) => {
+            .catch(async (e) => {
 
-                        apigateway_GetMethod(httpMethod, resourceId, restApiId, region, credentials, client, oRC);
+                if (e.name === 'TooManyRequestsException') {
+                    await new Promise(resolve => setTimeout(resolve, WAIT));
+                    apigateway_GetMethod(httpMethod, resourceId, restApiId, client, WAIT * 2)
+                        .then((data) => {
 
-                    });
+                            data.restApiId = restApiId;
+                            data.resourceId = resourceId;
+                            resolve(data);
+
+                        });
+                } else {
+                    reject(e);
+                }
+
             });
+
     });
 };
 
 
-let apigateway_GetResources = (restApiId, region, credentials, client, oRC) => {
+let apigateway_GetResources = (restApiId, client, WAIT) => {
     return new Promise(async (resolve, reject) => {
+
+        if (WAIT === undefined) {
+            WAIT = 500;
+        }
+        WAIT += Math.random() * 1000;
 
         const pConfig = {
             client,
@@ -76,65 +95,57 @@ let apigateway_GetResources = (restApiId, region, credentials, client, oRC) => {
 
         const paginator = paginateGetResources(pConfig, cmdParams);
 
-        const arr = [];
+        const arrPromisesR = [];
 
         try {
 
             for await (const page of paginator) {
-                // oRC.incr(SVC);
-                await oRC.pauser();
-                arr.push(...page.items);
+                calls++;
+                arrPromisesR.push(...page.items);
             }
         } catch (e) {
 
-            switch (e.name) {
-                case 'TooManyRequestsException':
-                    oRC.pauser(SVC)
-                        .then((bool) => {
-
-                            apigateway_GetResources(restApiId, region, credentials, client, oRC);
-
-                        });
-                    break;
-                default:
-                    // console.warn(`Problem w requestSender on Fn '${fName}' for region ${region}.`);
-                    // console.log(e.name);
-                    // console.log(Object.keys(e));
-                    reject(e);
+            if (e.name === 'TooManyRequestsException') {
+                await new Promise(resolve => setTimeout(resolve, WAIT));
+                arrPromisesR.push(apigateway_GetResources(restApiId, client, WAIT * 2));
+            } else {
+                reject(e);
             }
         }
 
 
-        let arr2 = [];
+        Promise.all(arrPromisesR)
+            .then((arrResources) => {
+                let arrPromisesM = [];
 
-
-        arr.forEach((oResource) => {
-
-            if (oResource.resourceMethods !== undefined) {
-
-                Object.keys(oResource.resourceMethods).forEach((METHOD) => {
-
-                    arr2.push(apigateway_GetMethod(METHOD, oResource.id, restApiId, region, credentials, client, oRC));
-
-                });
-
-            }
-
-        });
-
-
-        Promise.all(arr2)
-            .then((arrP) => {
-
-
-                let objGlobal = {
-                    [region]: {
-                        RestApiResources: [...arrP]
-                    }
+                let obj = {
+                    RestApiResources: [],
+                    RestApiMethods: [],
                 };
 
 
-                resolve(objGlobal);
+                arrResources.forEach((oResource, i) => {
+
+                    oResource.RestApiId = restApiId;
+                    obj.RestApiResources.push(oResource);
+
+                    if (oResource.resourceMethods !== undefined) {
+                        Object.keys(oResource.resourceMethods).forEach((METHOD) => {
+                            arrPromisesM.push(apigateway_GetMethod(METHOD, oResource.id, restApiId, client));
+                        });
+                    }
+
+                });
+
+
+                Promise.all(arrPromisesM)
+                    .then((arrMP) => {
+
+                        obj.RestApiMethods.push(...arrMP);
+
+                        resolve(obj);
+
+                    });
 
             });
 
@@ -142,7 +153,7 @@ let apigateway_GetResources = (restApiId, region, credentials, client, oRC) => {
 };
 
 
-export let apigateway_GetRestApis = (region, credentials, oRC) => {
+export let apigateway_GetRestApis = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new APIGatewayClient(
@@ -164,10 +175,8 @@ export let apigateway_GetRestApis = (region, credentials, oRC) => {
         const arr = [];
 
         try {
-
             for await (const page of paginator) {
-                // oRC.incr(SVC);
-                await oRC.pauser();
+                calls++;
                 arr.push(...page.items)
             }
         } catch (e) {
@@ -175,30 +184,34 @@ export let apigateway_GetRestApis = (region, credentials, oRC) => {
         }
 
 
-        let objGlobal = {
-            [region]: {
-                RestApis: arr
+        let arrPromisesR = [];
+
+
+        arr.forEach((objRestApi, i) => {
+            if (i < 10) {
+                arrPromisesR.push(apigateway_GetResources(objRestApi.id, client));
             }
-        };
-
-
-        let arr2 = [];
-
-
-        arr.forEach(async (objRestApi) => {
-            arr2.push(apigateway_GetResources(objRestApi.id, region, credentials, client, oRC));
         });
 
 
-        Promise.all(arr2)
-            .then((arrP) => {
+        Promise.all(arrPromisesR)
+            .then((arrResources) => {
 
-                let obj = {
+                let objReturn = {
                     [region]: {
-                        RestApis: [...arrP]
+                        RestApis: arr,
+                        RestApiResources: [],
+                        RestApiMethods: [],
                     }
                 };
-                resolve(obj);
+
+                arrResources.forEach((objResource) => {
+
+                    objReturn[region].RestApiResources.push(...objResource.RestApiResources);
+                    objReturn[region].RestApiMethods.push(...objResource.RestApiMethods);
+                });
+
+                resolve(objReturn);
 
             });
 

@@ -25,7 +25,7 @@ export function getPerms() {
 };
 
 
-export let cloudfront_ListCachePolicies = (region, credentials, oRC) => {
+export let cloudfront_ListCachePolicies = (region, credentials) => {
     return new Promise((resolve, reject) => {
 
         const client = new CloudFrontClient(
@@ -43,7 +43,6 @@ export let cloudfront_ListCachePolicies = (region, credentials, oRC) => {
 
         client.send(new ListCachePoliciesCommand({}))
             .then((data) => {
-                // oRC.incr();
                 data.CachePolicyList.Items.forEach((cachePolicy) => {
                     // if (this.objGlobal[region].CachePolicies === undefined) {
                     //     this.objGlobal[region].CachePolicies = [];
@@ -57,14 +56,13 @@ export let cloudfront_ListCachePolicies = (region, credentials, oRC) => {
                 resolve(obj);
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
     });
 };
 
 
-export let cloudfront_ListDistributions = (region, credentials, oRC) => {
+export let cloudfront_ListDistributions = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new CloudFrontClient(
@@ -88,11 +86,9 @@ export let cloudfront_ListDistributions = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.DistributionList.Items);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 

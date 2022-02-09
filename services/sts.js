@@ -20,7 +20,7 @@ export function getPerms() {
 };
 
 
-export let sts_GetCallerIdentity = (region, credentials, oRC) => {
+export let sts_GetCallerIdentity = (region, credentials) => {
     return new Promise((resolve, reject) => {
 
         let client = new STSClient({

@@ -54,7 +54,7 @@ export function getPerms() {
 };
 
 
-let ecs_DescribeServices = (cluster, services, client, region, oRC) => {
+let ecs_DescribeServices = (cluster, services, client, region) => {
     return new Promise((resolve, reject) => {
 
         let obj = {
@@ -67,21 +67,13 @@ let ecs_DescribeServices = (cluster, services, client, region, oRC) => {
             services
         }))
             .then((data) => {
-                // oRC.incr();
                 data.services.forEach((service) => {
-                    // if (this.objGlobal[region].ECSServices === undefined) {
-                    //     this.objGlobal[region].ECSServices = [];
-                    // }
-                    //
-                    // this.objGlobal[region].ECSServices.push(service);
                     obj[region].ECSServices.push(service);
 
                 });
-                // resolve(`${region}/ecs_DescribeServices`);
                 resolve(obj);
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
     });
@@ -107,11 +99,9 @@ let ecs_ListClusterServices = (cluster, client, region) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.serviceArns);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
@@ -124,9 +114,6 @@ let ecs_ListClusterServices = (cluster, client, region) => {
 
         }
 
-        // arr.forEach((Service) => {
-        //   ecs_DescribeServices()
-        // });
 
         Promise.all(arr2)
             .then((aP) => {
@@ -140,16 +127,11 @@ let ecs_ListClusterServices = (cluster, client, region) => {
 
             });
 
-        // for (let i = 0; i < arr.length; i++) {
-        //   let serviceArn = arr[i];
-        //   await ecs_DescribeServices(cluster.clusterArn, serviceArn);
-        // }
-        // resolve(`${region}/ecs_ListServices`);
     });
 };
 
 
-let ecs_DescribeClusters = (clusters, client, region, oRC) => {
+let ecs_DescribeClusters = (clusters, client, region) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeClustersCommand({
@@ -159,7 +141,6 @@ let ecs_DescribeClusters = (clusters, client, region, oRC) => {
             ],
         }))
             .then((data) => {
-                // oRC.incr();
                 data.clusters.forEach((cluster) => {
                     ecs_ListClusterServices(cluster, client, region);
                 });
@@ -167,14 +148,13 @@ let ecs_DescribeClusters = (clusters, client, region, oRC) => {
                 resolve(data);
             })
             .catch((e) => {
-                // oRC.incr();
                 reject(e);
             });
     });
 };
 
 
-export let ecs_ListClusters = (region, credentials, oRC) => {
+export let ecs_ListClusters = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ECSClient(
@@ -198,21 +178,15 @@ export let ecs_ListClusters = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.clusterArns);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
 
         let arr2 = [];
         arr2.push(ecs_DescribeClusters(arr, client, region));
-
-        // arr.forEach((clusterArn) => {
-        //   arr2.push(ecs_DescribeClusters([clusterArn]), client);
-        // });
 
 
         Promise.all(arr2)
@@ -225,30 +199,16 @@ export let ecs_ListClusters = (region, credentials, oRC) => {
                 };
                 resolve(obj);
 
+            })
+            .catch((e) => {
+                reject(e);
             });
 
-        // for (let i = 0; i < arr.length; i++) {
-        //   arrP.push(ecs_DescribeClusters(arr[i].clusterArns), client);
-        // }
-
-        // Promise.all(arrP)
-        //   .then((aP) => {
-        //     let arr = [];
-        //     for (let i = 0; i < aP.length; i++) {
-        //       arr.push()
-        //     }
-        //     let obj = {
-        //       [region]: {
-        //         ECSClusters: arr
-        //       }
-        //     };
-        //     resolve(obj);
-        //   });
     });
 };
 
 
-let ecs_DescribeTaskDefinition = (taskDefinitionArn, client, oRC) => {
+let ecs_DescribeTaskDefinition = (taskDefinitionArn, client) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeTaskDefinitionCommand(
@@ -257,18 +217,16 @@ let ecs_DescribeTaskDefinition = (taskDefinitionArn, client, oRC) => {
             }
         ))
             .then((data) => {
-                // oRC.incr();
                 resolve(data.taskDefinition);
             })
             .catch((err) => {
-                // oRC.incr();
                 reject(err);
             });
     });
 };
 
 
-export let ecs_ListTaskDefinitions = (region, credentials, oRC) => {
+export let ecs_ListTaskDefinitions = (region, credentials) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ECSClient(
@@ -292,11 +250,9 @@ export let ecs_ListTaskDefinitions = (region, credentials, oRC) => {
         try {
 
             for await (const page of paginator) {
-                // oRC.incr();
                 arr.push(...page.taskDefinitionArns);
             }
         } catch (e) {
-            // oRC.incr();
             reject(e);
         }
 
