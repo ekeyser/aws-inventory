@@ -16,7 +16,7 @@ export function getPerms() {
 };
 
 
-export let s3_ListBuckets = (region, credentials) => {
+export let s3_ListBuckets = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const AWS_SIG_VER = 'aws4_request';

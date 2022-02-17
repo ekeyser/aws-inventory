@@ -31,7 +31,7 @@ export function getPerms() {
 };
 
 
-export let elasticache_DescribeCacheClusters = (region, credentials) => {
+export let elasticache_DescribeCacheClusters = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -76,7 +76,7 @@ export let elasticache_DescribeCacheClusters = (region, credentials) => {
 };
 
 
-export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
+export let elasticache_DescribeCacheSubnetGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(
@@ -119,7 +119,7 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials) => {
 };
 
 
-export let elasticache_DescribeReplicationGroups = (region, credentials) => {
+export let elasticache_DescribeReplicationGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElastiCacheClient(

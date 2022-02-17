@@ -60,7 +60,7 @@ export function getPerms() {
 };
 
 
-export function ec2_DescribeAvailabilityZones(region, credentials) {
+export function ec2_DescribeAvailabilityZones(region, credentials, svcCallsAll) {
     return new Promise((resolve, reject) => {
 
         let client = new EC2Client({
@@ -97,7 +97,7 @@ export function ec2_DescribeAvailabilityZones(region, credentials) {
 }
 
 
-export function ec2_DescribeRouteTables(region, credentials) {
+export function ec2_DescribeRouteTables(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -139,7 +139,7 @@ export function ec2_DescribeRouteTables(region, credentials) {
 }
 
 
-export function ec2_DescribeVolumes(region, credentials) {
+export function ec2_DescribeVolumes(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -178,7 +178,7 @@ export function ec2_DescribeVolumes(region, credentials) {
 }
 
 
-export function ec2_DescribeVpcs(region, credentials) {
+export function ec2_DescribeVpcs(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -217,7 +217,7 @@ export function ec2_DescribeVpcs(region, credentials) {
 }
 
 
-export function ec2_DescribeSubnets(region, credentials) {
+export function ec2_DescribeSubnets(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -259,7 +259,7 @@ export function ec2_DescribeSubnets(region, credentials) {
 }
 
 
-export function ec2_DescribeInstances(region, credentials) {
+export function ec2_DescribeInstances(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({
@@ -303,7 +303,7 @@ export function ec2_DescribeInstances(region, credentials) {
 }
 
 
-export function ec2_DescribeSecurityGroups(region, credentials) {
+export function ec2_DescribeSecurityGroups(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new EC2Client({

@@ -26,7 +26,7 @@ export function getPerms() {
 };
 
 
-export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
+export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(
@@ -68,7 +68,7 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials) => {
 };
 
 
-export let autoscaling_DescribeLaunchConfigurations = (region, credentials) => {
+export let autoscaling_DescribeLaunchConfigurations = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new AutoScalingClient(

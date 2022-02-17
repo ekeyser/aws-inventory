@@ -84,7 +84,7 @@ function states_DescribeStateMachine(stateMachineArn, client) {
 }
 
 
-export function states_ListActivities(region, credentials) {
+export function states_ListActivities(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new SFNClient({
@@ -134,7 +134,7 @@ export function states_ListActivities(region, credentials) {
 };
 
 
-export function states_ListStateMachines(region, credentials) {
+export function states_ListStateMachines(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new SFNClient({

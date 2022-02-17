@@ -15,7 +15,7 @@ export function getPerms() {
 };
 
 
-export let lambda_ListFunctions = (region, credentials) => {
+export let lambda_ListFunctions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new LambdaClient(

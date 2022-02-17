@@ -25,7 +25,7 @@ export function getPerms() {
 };
 
 
-export let cloudfront_ListCachePolicies = (region, credentials) => {
+export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll) => {
     return new Promise((resolve, reject) => {
 
         const client = new CloudFrontClient(
@@ -62,7 +62,7 @@ export let cloudfront_ListCachePolicies = (region, credentials) => {
 };
 
 
-export let cloudfront_ListDistributions = (region, credentials) => {
+export let cloudfront_ListDistributions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new CloudFrontClient(

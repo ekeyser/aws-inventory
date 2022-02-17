@@ -48,7 +48,7 @@ let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client)
 };
 
 
-export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials) => {
+export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ElasticLoadBalancingV2Client(

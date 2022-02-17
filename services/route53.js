@@ -18,7 +18,7 @@ export function getPerms() {
 };
 
 
-export let route53_ListHostedZones = (region, credentials) => {
+export let route53_ListHostedZones = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new Route53Client({

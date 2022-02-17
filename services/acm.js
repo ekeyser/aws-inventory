@@ -26,7 +26,7 @@ export function getPerms() {
 }
 
 
-export function acm_DescribeCertificate(cert, client) {
+function acm_DescribeCertificate(cert, client) {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeCertificateCommand(
@@ -44,7 +44,7 @@ export function acm_DescribeCertificate(cert, client) {
 }
 
 
-export function acm_ListCertificates(region, credentials) {
+export function acm_ListCertificates(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
         let client = new ACMClient({

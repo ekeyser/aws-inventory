@@ -139,7 +139,7 @@ let iam_ListUserPolicies = (users, client) => {
     });
 };
 
-export let iam_ListUsers = (region, credentials) => {
+export let iam_ListUsers = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -257,7 +257,7 @@ let iam_GetPolicy = (policy, client) => {
 };
 
 
-export let iam_ListPolicies = (region, credentials) => {
+export let iam_ListPolicies = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({
@@ -311,7 +311,7 @@ export let iam_ListPolicies = (region, credentials) => {
 };
 
 
-export let iam_ListRoles = (region, credentials) => {
+export let iam_ListRoles = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new IAMClient({

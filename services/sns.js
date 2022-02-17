@@ -61,7 +61,7 @@ let sns_GetSubscriptionAttributes = (SubscriptionArn, client) => {
 };
 
 
-export let sns_ListSubscriptions = (region, credentials) => {
+export let sns_ListSubscriptions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new SNSClient({
@@ -137,7 +137,7 @@ let sns_GetTopicAttributes = (TopicArn, client) => {
 };
 
 
-export let sns_ListTopics = (region, credentials) => {
+export let sns_ListTopics = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         let client = new SNSClient({

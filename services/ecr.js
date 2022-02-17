@@ -15,7 +15,7 @@ export function getPerms() {
 };
 
 
-export let ecr_DescribeRepositories = (region, credentials) => {
+export let ecr_DescribeRepositories = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new ECRClient(

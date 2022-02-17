@@ -159,7 +159,7 @@ let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials) => {
 };
 
 
-export let rds_DescribeDBProxyEndpoints = (region, credentials) => {
+export let rds_DescribeDBProxyEndpoints = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -200,7 +200,7 @@ export let rds_DescribeDBProxyEndpoints = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBProxies = (region, credentials) => {
+export let rds_DescribeDBProxies = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -268,7 +268,7 @@ export let rds_DescribeDBProxies = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBSubnetGroups = (region, credentials) => {
+export let rds_DescribeDBSubnetGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -311,7 +311,7 @@ export let rds_DescribeDBSubnetGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBParameterGroups = (region, credentials) => {
+export let rds_DescribeDBParameterGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -354,7 +354,7 @@ export let rds_DescribeDBParameterGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeOptionGroups = (region, credentials) => {
+export let rds_DescribeOptionGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -397,7 +397,7 @@ export let rds_DescribeOptionGroups = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBClusters = (region, credentials) => {
+export let rds_DescribeDBClusters = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -440,7 +440,7 @@ export let rds_DescribeDBClusters = (region, credentials) => {
 };
 
 
-export let rds_DescribeDBInstances = (region, credentials) => {
+export let rds_DescribeDBInstances = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(

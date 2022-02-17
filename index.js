@@ -3,12 +3,12 @@
  */
 'use strict';
 
-// import config from './config';
 import * as _acm from './services/acm';
 import * as _apigateway from "./services/apigateway";
 import * as _autoscaling from "./services/autoscaling";
 import * as _cloudfront from "./services/cloudfront";
 import * as _cloudwatch from "./services/cloudwatch";
+import * as _cognitoidp from "./services/cognitoidp";
 import * as _dynamodb from "./services/dynamodb";
 import * as _ec2 from './services/ec2';
 import * as _ecr from "./services/ecr";
@@ -39,30 +39,31 @@ export class AwsInventory {
         let permissions = [];
 
         let services = [
-            'acm',
-            'apigateway',
-            'autoscaling',
-            'cloudfront',
-            'cloudwatch',
-            'dynamodb',
-            'ec2',
-            'ecr',
-            'ecs',
-            'elasticache',
-            'elasticloadbalancing',
-            'iam',
-            'lambda',
-            'rds',
-            'route53',
-            's3',
-            'states',
-            'sns',
-            'sqs',
-            'sts'
+            '_acm',
+            '_apigateway',
+            '_autoscaling',
+            '_cloudfront',
+            '_cloudwatch',
+            '_cognitoidp',
+            '_dynamodb',
+            '_ec2',
+            '_ecr',
+            '_ecs',
+            '_elasticache',
+            '_elasticloadbalancing',
+            '_iam',
+            '_lambda',
+            '_rds',
+            '_route53',
+            '_s3',
+            '_states',
+            '_sns',
+            '_sqs',
+            '_sts'
         ];
         services.forEach((service) => {
 
-            let svc = eval(`_${service}`);
+            let svc = eval(service);
             let perms = svc.getPerms();
             permissions.push(...perms);
 
@@ -92,7 +93,7 @@ export class AwsInventory {
     }
 
 
-    run(region, strService, apiCall) {
+    run(region, strService, apiCall, svcCallsAll) {
         return new Promise((resolve, reject) => {
 
             let credentials = this.credentials;
@@ -121,7 +122,8 @@ export class AwsInventory {
                             fnName = _acm.acm_ListCertificates;
                             break;
                         case 'apigateway_GetRestApis':
-                            fnName = _apigateway.apigateway_GetRestApis;
+                            fnName = _apigateway.apigateway_Begin;
+                            // fnName = _apigateway.apigateway_GetRestApis;
                             break;
                         case 'autoscaling_DescribeLaunchConfigurations':
                             fnName = _autoscaling.autoscaling_DescribeLaunchConfigurations;
@@ -137,6 +139,9 @@ export class AwsInventory {
                             break;
                         case 'cloudwatch_DescribeAlarms':
                             fnName = _cloudwatch.cloudwatch_DescribeAlarms;
+                            break;
+                        case 'cognito-idp_ListUserPools':
+                            fnName = _cognitoidp.cognitoidp_ListUserPools;
                             break;
                         case 'dynamodb_ListTables':
                             fnName = _dynamodb.dynamodb_ListTables;
@@ -228,18 +233,18 @@ export class AwsInventory {
                         case 'sns_ListTopics':
                             fnName = _sns.sns_ListTopics;
                             break;
+                        case 'sqs_ListQueues':
+                            fnName = _sqs.sqs_ListQueues;
+                            break;
                         case 'states_ListActivities':
                             fnName = _states.states_ListActivities;
+                            break;
+                        case 'states_ListStateMachines':
+                            fnName = _states.states_ListStateMachines;
                             break;
                         // case 'states_ListExecutions':
                         //   fnName = _states.states_ListExecutions;
                         //   break;
-                        case 'states_ListStateMachines':
-                            fnName = _states.states_ListStateMachines;
-                            break;
-                        case 'sqs_ListQueues':
-                            fnName = _sqs.sqs_ListQueues;
-                            break;
                         default:
                             const message = `${region}/fName '${fName}' is not an inventory initatior.`;
                             resolve(message);
@@ -248,7 +253,7 @@ export class AwsInventory {
 
                     if (fnName !== undefined) {
 
-                        fnName(region, this.credentials)
+                        fnName(region, this.credentials, svcCallsAll)
                             .then((p) => {
 
                                 Object.keys(p[region]).forEach((resource) => {
@@ -396,7 +401,7 @@ export class AwsInventory {
                 let arrServices = Object.keys(this.calls[strRegion])
                 arrServices.forEach((strService) => {
                     this.calls[strRegion][strService].forEach((apiCall) => {
-                        arrRequests.push(this.run(strRegion, strService, apiCall));
+                        arrRequests.push(this.run(strRegion, strService, apiCall, this.calls[strRegion][strService]));
                     });
                 });
             });

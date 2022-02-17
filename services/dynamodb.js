@@ -39,7 +39,7 @@ let dynamodb_DescribeTable = (TableName, client) => {
 };
 
 
-export let dynamodb_ListTables = (region, credentials) => {
+export let dynamodb_ListTables = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new DynamoDBClient(
