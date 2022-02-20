@@ -84,11 +84,10 @@ let qR = () => {
                   delete queue[hash];
                 })
                 .catch((e) => {
+                  queue[hash].inFlight = false;
                   if (e.name === 'TooManyRequestsException') {
                     WAIT = MAX_WAIT;
-                    queue[hash].inFlight = false;
                   } else {
-                    queue[hash].inFlight = false;
                     //   delete queue[hash];
                   }
                 })
