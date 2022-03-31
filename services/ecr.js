@@ -2,6 +2,7 @@
 
 import {ECRClient, paginateDescribeRepositories} from "@aws-sdk/client-ecr";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -18,6 +19,7 @@ export function getPerms() {
 export let ecr_DescribeRepositories = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ECRClient(
             {
                 region,

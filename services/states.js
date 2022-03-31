@@ -9,6 +9,7 @@ import {
     paginateListStateMachines,
 } from '@aws-sdk/client-sfn';
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -87,6 +88,7 @@ function states_DescribeStateMachine(stateMachineArn, client) {
 export function states_ListActivities(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new SFNClient({
             region,
             credentials,
@@ -137,6 +139,7 @@ export function states_ListActivities(region, credentials, svcCallsAll) {
 export function states_ListStateMachines(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new SFNClient({
             region,
             credentials,

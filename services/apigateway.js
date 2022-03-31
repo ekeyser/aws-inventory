@@ -10,12 +10,11 @@ import sha256 from 'sha256';
 
 let MAX_WAIT = 800;
 let WAIT = 800;
+// let MAX_WAIT_SHORT = 100;
+// let WAIT_SHORT = 100;
 let queue = {};
-let objGlobalReturn = {
-  RestApis: [],
-  RestApiResources: [],
-  RestApiMethods: [],
-};
+let objGlobalReturn = {};
+let serviceCallManifest;
 
 
 export function getPerms() {
@@ -55,8 +54,8 @@ let randString = (length) => {
 
 
 let rStr = () => {
-  let hash = sha256(randString(64));
-  return hash;
+  return sha256(randString(64));
+  // return hash;
 };
 
 
@@ -76,11 +75,21 @@ let qR = () => {
           if (queue[hash].inFlight === false) {
 
             queue[hash].inFlight = true;
-            await new Promise(resolve => setTimeout(resolve, WAIT));
+            // console.log(`Wainting ${WAIT}.`);
+            // console.log(queue[hash].wait);
+            if (queue[hash].wait === true) {
+              await new Promise(resolve => setTimeout(resolve, WAIT));
+            } else {
+              await new Promise(resolve => setTimeout(resolve, WAIT));
+            }
+            // console.log(queue[hash].fn);
             promises.push(
               queue[hash].fn(...queue[hash].params)
                 .then(() => {
-                  WAIT = Math.ceil(WAIT * 0.95);
+                  WAIT = Math.ceil(WAIT - 20);
+                  if (WAIT < 350) {
+                    WAIT = 350;
+                  }
                   delete queue[hash];
                 })
                 .catch((e) => {
@@ -98,7 +107,8 @@ let qR = () => {
         }
 
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 10));
+      // console.log(Object.keys(queue).length);
 
     }
 
@@ -111,7 +121,7 @@ let qR = () => {
 };
 
 
-let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
+let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client, region) => {
   return new Promise((resolve, reject) => {
 
     client.send(new GetMethodCommand(
@@ -124,7 +134,14 @@ let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
       .then((data) => {
         data.restApiId = restApiId;
         data.resourceId = resourceId;
-        objGlobalReturn.RestApiMethods.push(data);
+        if (objGlobalReturn[region] === undefined) {
+          objGlobalReturn[region] = {
+            RestApis: [],
+            RestApiResources: [],
+            RestApiMethods: [],
+          };
+        }
+        objGlobalReturn[region].RestApiMethods.push(data);
         resolve();
       })
       .catch((e) => {
@@ -137,12 +154,12 @@ let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client) => {
 };
 
 
-let apigateway_GetResources = (restApiId, client) => {
+let apigateway_GetResources = (restApiId, client, region) => {
   return new Promise(async (resolve, reject) => {
 
     const pConfig = {
       client,
-      pageSize: 150,
+      pageSize: 500,
     };
 
     const cmdParams = {
@@ -164,32 +181,46 @@ let apigateway_GetResources = (restApiId, client) => {
 
     Promise.all(arrItems)
       .then((arrResources) => {
-        let arrPromisesM = [];
+        // let arrPromisesM = [];
+        //
+        // let obj = {
+        //   RestApiResources: [],
+        //   RestApiMethods: [],
+        // };
 
-        let obj = {
-          RestApiResources: [],
-          RestApiMethods: [],
-        };
 
-
-        arrResources.forEach((oResource, i) => {
+        arrResources.forEach((oResource) => {
 
           oResource.RestApiId = restApiId;
-          objGlobalReturn.RestApiResources.push(oResource);
+          if (objGlobalReturn[region] === undefined) {
+            objGlobalReturn[region] = {
+              RestApis: [],
+              RestApiResources: [],
+              RestApiMethods: [],
+            };
+          }
+          objGlobalReturn[region].RestApiResources.push(oResource);
 
           if (oResource.resourceMethods !== undefined) {
             Object.keys(oResource.resourceMethods).forEach((METHOD) => {
+              const nextCall = `GetMethod`;
               const objFn = {
                 fn: apigateway_GetMethod,
+                wait: false,
                 inFlight: false,
                 params: [
                   METHOD,
                   oResource.id,
                   restApiId,
                   client,
+                  region,
                 ],
               };
-              queue[rStr()] = objFn;
+
+              if (serviceCallManifest.indexOf(nextCall) > -1) {
+                queue[rStr()] = objFn;
+              }
+
             });
           }
 
@@ -203,7 +234,7 @@ let apigateway_GetResources = (restApiId, client) => {
 };
 
 
-let apigateway_GetRestApis = (region, credentials, svcCallsAll) => {
+let apigateway_GetRestApis = (region, credentials) => {
   return new Promise(async (resolve, reject) => {
 
     const client = new APIGatewayClient(
@@ -215,7 +246,7 @@ let apigateway_GetRestApis = (region, credentials, svcCallsAll) => {
 
     const pConfig = {
       client,
-      pageSize: 200,
+      pageSize: 500,
     };
 
     const cmdParams = {};
@@ -233,21 +264,33 @@ let apigateway_GetRestApis = (region, credentials, svcCallsAll) => {
     }
 
 
-    objGlobalReturn.RestApis = arrItems;
-    let arrPromisesR = [];
+    if (objGlobalReturn[region] === undefined) {
+      objGlobalReturn[region] = {
+        RestApis: [],
+        RestApiResources: [],
+        RestApiMethods: [],
+      };
+    }
+    objGlobalReturn[region].RestApis = arrItems;
+    // let arrPromisesR = [];
 
 
-    arrItems.forEach((objRestApi, i) => {
+    arrItems.forEach((objRestApi) => {
+      let nextCall = `GetResources`;
       let objFn = {
         fn: apigateway_GetResources,
+        wait: true,
         inFlight: false,
         params: [
           objRestApi.id,
           client,
+          region,
         ],
       };
 
-      queue[rStr()] = objFn;
+      if (serviceCallManifest.indexOf(nextCall) > -1) {
+        queue[rStr()] = objFn;
+      }
 
     });
 
@@ -260,24 +303,30 @@ let apigateway_GetRestApis = (region, credentials, svcCallsAll) => {
 export let apigateway_Begin = (region, credentials, svcCallsAll) => {
   return new Promise((resolve) => {
 
+    serviceCallManifest = svcCallsAll;
+
+    let nextCall = `GetRestApis`;
     let objFn = {
       fn: apigateway_GetRestApis,
+      wait: true,
       inFlight: false,
       params: [
         region,
         credentials,
-        svcCallsAll,
       ],
     };
 
-    queue[rStr()] = objFn;
+    if (serviceCallManifest.indexOf(nextCall) > -1) {
+      queue[rStr()] = objFn;
+    }
+
 
     qR()
       .then(() => {
-        let objReturn = {
-          [region]: objGlobalReturn
-        };
-        resolve(objReturn);
+        // let objReturn = {
+        //   [region]: objGlobalReturn
+        // };
+        resolve(objGlobalReturn);
       });
 
   });

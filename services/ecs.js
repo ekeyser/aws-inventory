@@ -11,6 +11,7 @@ import {
     paginateListTasks,
 } from "@aws-sdk/client-ecs";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -157,6 +158,7 @@ let ecs_DescribeClusters = (clusters, client, region) => {
 export let ecs_ListClusters = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ECSClient(
             {
                 region,
@@ -229,6 +231,7 @@ let ecs_DescribeTaskDefinition = (taskDefinitionArn, client) => {
 export let ecs_ListTaskDefinitions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ECSClient(
             {
                 region,

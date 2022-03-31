@@ -6,6 +6,7 @@ import {
     paginateDescribeCacheSubnetGroups, paginateDescribeReplicationGroups
 } from "@aws-sdk/client-elasticache";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -34,6 +35,7 @@ export function getPerms() {
 export let elasticache_DescribeCacheClusters = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ElastiCacheClient(
             {
                 region,
@@ -79,6 +81,7 @@ export let elasticache_DescribeCacheClusters = (region, credentials, svcCallsAll
 export let elasticache_DescribeCacheSubnetGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ElastiCacheClient(
             {
                 region,
@@ -122,6 +125,7 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials, svcCall
 export let elasticache_DescribeReplicationGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ElastiCacheClient(
             {
                 region,

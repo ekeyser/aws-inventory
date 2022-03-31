@@ -6,6 +6,7 @@ import {
     paginateListQueues,
 } from '@aws-sdk/client-sqs';
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -49,6 +50,7 @@ function sqs_GetQueueAttributes(QueueUrl, client) {
 export function sqs_ListQueues(region, credentials, svcCallsAll) {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new SQSClient({
             region,
             credentials,

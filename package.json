@@ -1,54 +1,85 @@
 {
-  "name": "aws-inventory",
-  "version": "0.3.4",
+  "_from": "aws-inventory@latest",
+  "_id": "aws-inventory@0.3.6",
+  "_inBundle": false,
+  "_integrity": "sha512-3pMIDk7aN/SqQyXFitgth+GpL3x+pwbANElS5jZnb1WTThuUDDeo4AhLhvXKyAw5UxQmYP/LHAlpj9A71iRxsA==",
+  "_location": "/aws-inventory",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "aws-inventory@latest",
+    "name": "aws-inventory",
+    "escapedName": "aws-inventory",
+    "rawSpec": "latest",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "/cloud-inventory"
+  ],
+  "_resolved": "https://registry.npmjs.org/aws-inventory/-/aws-inventory-0.3.5.tgz",
+  "_shasum": "4187e26dfea301fad76213ffbe72cd44ce3b6abd",
+  "_spec": "aws-inventory@latest",
+  "_where": "/home/ekeyser/WebstormProjects/zeppln.com/node_modules/cloud-inventory",
+  "author": {
+    "name": "emkeyser"
+  },
+  "bugs": {
+    "url": "https://github.com/ekeyser/aws-inventory/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "@aws-sdk/client-acm": "^3.58.0",
+    "@aws-sdk/client-api-gateway": "^3.58.0",
+    "@aws-sdk/client-auto-scaling": "^3.58.0",
+    "@aws-sdk/client-cloudfront": "^3.58.0",
+    "@aws-sdk/client-cloudwatch": "^3.58.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.58.0",
+    "@aws-sdk/client-dynamodb": "^3.58.0",
+    "@aws-sdk/client-ec2": "^3.60.0",
+    "@aws-sdk/client-ecr": "^3.58.0",
+    "@aws-sdk/client-ecs": "^3.58.0",
+    "@aws-sdk/client-elastic-load-balancing-v2": "^3.58.0",
+    "@aws-sdk/client-elasticache": "^3.58.0",
+    "@aws-sdk/client-iam": "^3.58.0",
+    "@aws-sdk/client-lambda": "^3.58.0",
+    "@aws-sdk/client-rds": "^3.58.0",
+    "@aws-sdk/client-route-53": "^3.58.0",
+    "@aws-sdk/client-s3": "^3.58.0",
+    "@aws-sdk/client-sfn": "^3.58.0",
+    "@aws-sdk/client-sns": "^3.58.0",
+    "@aws-sdk/client-sqs": "^3.58.0",
+    "@aws-sdk/client-sts": "^3.58.0",
+    "axios": "^0.26.1",
+    "crypto-js": "^4.1.1",
+    "sha256": "^0.2.0"
+  },
+  "deprecated": false,
   "description": "AWS Infrastructure Inventory",
-  "main": "index.js",
-  "repository": "ekeyser/aws-inventory",
+  "devDependencies": {},
   "files": [
     "index.js",
     "services"
   ],
-  "scripts": {
-    "build": "rollup -c",
-    "build-closure": "rollup -c && google-closure-compiler --language_in=ECMASCRIPT5_STRICT --js build/cloud-inventory.js --js_output_file build/cloud-inventory.min.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "homepage": "https://github.com/ekeyser/aws-inventory",
   "keywords": [
     "aws",
     "cloud",
     "inventory",
     "infrastructure"
   ],
-  "author": "emkeyser",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ekeyser/aws-inventory/issues"
+  "main": "index.js",
+  "name": "aws-inventory",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ekeyser/aws-inventory.git"
   },
-  "homepage": "https://github.com/ekeyser/aws-inventory",
-  "dependencies": {
-    "@aws-sdk/client-acm": "^3.52.0",
-    "@aws-sdk/client-api-gateway": "^3.52.0",
-    "@aws-sdk/client-auto-scaling": "^3.52.0",
-    "@aws-sdk/client-cloudfront": "^3.52.0",
-    "@aws-sdk/client-cloudwatch": "^3.52.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.52.0",
-    "@aws-sdk/client-dynamodb": "^3.52.0",
-    "@aws-sdk/client-ec2": "^3.52.0",
-    "@aws-sdk/client-ecr": "^3.52.0",
-    "@aws-sdk/client-ecs": "^3.52.0",
-    "@aws-sdk/client-elastic-load-balancing-v2": "^3.52.0",
-    "@aws-sdk/client-elasticache": "^3.52.0",
-    "@aws-sdk/client-iam": "^3.52.0",
-    "@aws-sdk/client-lambda": "^3.52.0",
-    "@aws-sdk/client-rds": "^3.52.0",
-    "@aws-sdk/client-route-53": "^3.52.0",
-    "@aws-sdk/client-s3": "^3.52.0",
-    "@aws-sdk/client-sfn": "^3.52.0",
-    "@aws-sdk/client-sqs": "^3.52.0",
-    "@aws-sdk/client-sts": "^3.52.0",
-    "axios": "^0.26.0",
-    "crypto-js": "^4.1.1",
-    "sha256": "^0.2.0"
+  "scripts": {
+    "build": "rollup -c",
+    "build-closure": "rollup -c && google-closure-compiler --language_in=ECMASCRIPT5_STRICT --js build/cloud-inventory.js --js_output_file build/cloud-inventory.min.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {}
+  "version": "0.3.5"
 }

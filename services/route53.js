@@ -5,6 +5,7 @@ import {
     paginateListHostedZones,
 } from '@aws-sdk/client-route-53';
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -21,6 +22,7 @@ export function getPerms() {
 export let route53_ListHostedZones = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new Route53Client({
             region,
             credentials,

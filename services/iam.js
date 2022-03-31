@@ -11,6 +11,7 @@ import {
     GetPolicyVersionCommand,
 } from '@aws-sdk/client-iam';
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -142,6 +143,7 @@ let iam_ListUserPolicies = (users, client) => {
 export let iam_ListUsers = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,
@@ -260,6 +262,7 @@ let iam_GetPolicy = (policy, client) => {
 export let iam_ListPolicies = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,
@@ -314,6 +317,7 @@ export let iam_ListPolicies = (region, credentials, svcCallsAll) => {
 export let iam_ListRoles = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,

@@ -5,6 +5,7 @@ import {
     ElasticLoadBalancingV2Client, paginateDescribeLoadBalancers
 } from "@aws-sdk/client-elastic-load-balancing-v2";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -51,6 +52,7 @@ let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client)
 export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new ElasticLoadBalancingV2Client(
             {
                 region,

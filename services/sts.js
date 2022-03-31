@@ -5,8 +5,6 @@ import {
     GetCallerIdentityCommand,
 } from '@aws-sdk/client-sts';
 
-const SVC = 'sts';
-
 
 export function getPerms() {
     return [

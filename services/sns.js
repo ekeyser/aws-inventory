@@ -8,6 +8,7 @@ import {
     GetSubscriptionAttributesCommand,
 } from '@aws-sdk/client-sns';
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -64,6 +65,7 @@ let sns_GetSubscriptionAttributes = (SubscriptionArn, client) => {
 export let sns_ListSubscriptions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new SNSClient({
             region,
             credentials,
@@ -140,6 +142,7 @@ let sns_GetTopicAttributes = (TopicArn, client) => {
 export let sns_ListTopics = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         let client = new SNSClient({
             region,
             credentials,

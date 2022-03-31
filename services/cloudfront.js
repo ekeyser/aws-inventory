@@ -6,6 +6,7 @@ import {
     paginateListDistributions
 } from "@aws-sdk/client-cloudfront";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -22,12 +23,13 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll) => {
     return new Promise((resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new CloudFrontClient(
             {
                 region,
@@ -65,6 +67,7 @@ export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll) => 
 export let cloudfront_ListDistributions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new CloudFrontClient(
             {
                 region,

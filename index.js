@@ -254,13 +254,13 @@ export class AwsInventory {
                     if (fnName !== undefined) {
 
                         fnName(region, this.credentials, svcCallsAll)
-                            .then((p) => {
+                            .then((resources) => {
 
-                                Object.keys(p[region]).forEach((resource) => {
-                                    this.objGlobal[region][resource] = p[region][resource];
+                                Object.keys(resources[region]).forEach((resourceType) => {
+                                    this.objGlobal[region][resourceType] = resources[region][resourceType];
                                 });
 
-                                resolve(p);
+                                resolve(resources);
 
                             })
                             .catch(async (e) => {

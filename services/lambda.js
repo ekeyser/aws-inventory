@@ -2,6 +2,7 @@
 
 import {LambdaClient, paginateListFunctions} from "@aws-sdk/client-lambda";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -18,6 +19,7 @@ export function getPerms() {
 export let lambda_ListFunctions = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new LambdaClient(
             {
                 region,

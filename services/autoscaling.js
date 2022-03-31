@@ -7,6 +7,7 @@ import {
     paginateDescribeLaunchConfigurations
 } from "@aws-sdk/client-auto-scaling";
 
+let serviceCallManifest;
 
 export function getPerms() {
     return [
@@ -29,6 +30,7 @@ export function getPerms() {
 export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new AutoScalingClient(
             {
                 region,
@@ -71,6 +73,7 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCall
 export let autoscaling_DescribeLaunchConfigurations = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
+      serviceCallManifest = svcCallsAll;
         const client = new AutoScalingClient(
             {
                 region,

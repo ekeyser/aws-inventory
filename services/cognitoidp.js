@@ -7,6 +7,8 @@ import {
   paginateListGroups,
 } from '@aws-sdk/client-cognito-identity-provider';
 
+let serviceCallManifest;
+
 export function getPerms() {
   return [
     {
@@ -112,6 +114,7 @@ let cognitoidp_ListUsers = (UserPoolId, client) => {
 export let cognitoidp_ListUserPools = (region, credentials, svcCallsAll) => {
   return new Promise(async (resolve, reject) => {
 
+    serviceCallManifest = svcCallsAll;
     const client = new CognitoIdentityProviderClient(
       {
         region,
@@ -142,8 +145,17 @@ export let cognitoidp_ListUserPools = (region, credentials, svcCallsAll) => {
 
 
     arr.forEach((objUserPool, i) => {
-      arrPromisesU.push(cognitoidp_ListUsers(objUserPool.Id, client));
-      arrPromisesG.push(cognitoidp_ListGroups(objUserPool.Id, client));
+
+      if (serviceCallManifest.indexOf('ListUsers') > -1) {
+
+        arrPromisesU.push(cognitoidp_ListUsers(objUserPool.Id, client));
+      }
+
+      if (serviceCallManifest.indexOf('ListGroups') > -1) {
+
+        arrPromisesG.push(cognitoidp_ListGroups(objUserPool.Id, client));
+      }
+
     });
 
 
