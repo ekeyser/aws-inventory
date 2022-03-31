@@ -1,34 +1,30 @@
 {
-  "_from": "aws-inventory@latest",
-  "_id": "aws-inventory@0.3.6",
-  "_inBundle": false,
-  "_integrity": "sha512-3pMIDk7aN/SqQyXFitgth+GpL3x+pwbANElS5jZnb1WTThuUDDeo4AhLhvXKyAw5UxQmYP/LHAlpj9A71iRxsA==",
-  "_location": "/aws-inventory",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "aws-inventory@latest",
-    "name": "aws-inventory",
-    "escapedName": "aws-inventory",
-    "rawSpec": "latest",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "/cloud-inventory"
+  "name": "aws-inventory",
+  "version": "0.3.6",
+  "description": "AWS Infrastructure Inventory",
+  "main": "index.js",
+  "repository": "ekeyser/aws-inventory",
+  "files": [
+    "index.js",
+    "services"
   ],
-  "_resolved": "https://registry.npmjs.org/aws-inventory/-/aws-inventory-0.3.5.tgz",
-  "_shasum": "4187e26dfea301fad76213ffbe72cd44ce3b6abd",
-  "_spec": "aws-inventory@latest",
-  "_where": "/home/ekeyser/WebstormProjects/zeppln.com/node_modules/cloud-inventory",
-  "author": {
-    "name": "emkeyser"
+  "scripts": {
+    "build": "rollup -c",
+    "build-closure": "rollup -c && google-closure-compiler --language_in=ECMASCRIPT5_STRICT --js build/cloud-inventory.js --js_output_file build/cloud-inventory.min.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "aws",
+    "cloud",
+    "inventory",
+    "infrastructure"
+  ],
+  "author": "emkeyser",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ekeyser/aws-inventory/issues"
   },
-  "bundleDependencies": false,
+  "homepage": "https://github.com/ekeyser/aws-inventory",
   "dependencies": {
     "@aws-sdk/client-acm": "^3.58.0",
     "@aws-sdk/client-api-gateway": "^3.58.0",
@@ -48,38 +44,13 @@
     "@aws-sdk/client-route-53": "^3.58.0",
     "@aws-sdk/client-s3": "^3.58.0",
     "@aws-sdk/client-sfn": "^3.58.0",
-    "@aws-sdk/client-sns": "^3.58.0",
     "@aws-sdk/client-sqs": "^3.58.0",
     "@aws-sdk/client-sts": "^3.58.0",
     "axios": "^0.26.1",
     "crypto-js": "^4.1.1",
     "sha256": "^0.2.0"
   },
-  "deprecated": false,
-  "description": "AWS Infrastructure Inventory",
-  "devDependencies": {},
-  "files": [
-    "index.js",
-    "services"
-  ],
-  "homepage": "https://github.com/ekeyser/aws-inventory",
-  "keywords": [
-    "aws",
-    "cloud",
-    "inventory",
-    "infrastructure"
-  ],
-  "license": "MIT",
-  "main": "index.js",
-  "name": "aws-inventory",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ekeyser/aws-inventory.git"
-  },
-  "scripts": {
-    "build": "rollup -c",
-    "build-closure": "rollup -c && google-closure-compiler --language_in=ECMASCRIPT5_STRICT --js build/cloud-inventory.js --js_output_file build/cloud-inventory.min.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "0.3.5"
+  "devDependencies": {
+
+  }
 }
