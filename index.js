@@ -3,7 +3,7 @@
  */
 'use strict';
 
-// import * as _acm from "./services/acm";
+import * as _acm from "./services/acm";
 import * as _apigateway from "./services/apigateway";
 import * as _autoscaling from "./services/autoscaling";
 import * as _cloudfront from "./services/cloudfront";
@@ -39,7 +39,7 @@ export class AwsInventory {
         let permissions = [];
 
         let services = [
-            // '_acm',
+            '_acm',
             '_apigateway',
             '_autoscaling',
             '_cloudfront',
@@ -63,6 +63,7 @@ export class AwsInventory {
         ];
         services.forEach((service) => {
 
+            console.log(service);
             let svc = eval(service);
             let perms = svc.getPerms();
             permissions.push(...perms);
@@ -118,9 +119,9 @@ export class AwsInventory {
 
                     let fnName;
                     switch (fName) {
-                        // case 'acm_ListCertificates':
-                        //     fnName = _acm.acm_ListCertificates;
-                        //     break;
+                        case 'acm_ListCertificates':
+                            fnName = _acm.acm_ListCertificates;
+                            break;
                         case 'apigateway_GetRestApis':
                             fnName = _apigateway.apigateway_Begin;
                             // fnName = _apigateway.apigateway_GetRestApis;
