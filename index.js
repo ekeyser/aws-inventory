@@ -63,10 +63,74 @@ export class AwsInventory {
         ];
         services.forEach((service) => {
 
-            console.log(service);
-            let svc = eval(service);
-            let perms = svc.getPerms();
-            permissions.push(...perms);
+            // let svc = eval(service);
+            switch (service) {
+                case '_acm':
+                    permissions.push(..._acm.getPerms());
+                    break;
+                case '_apigateway':
+                    permissions.push(..._apigateway.getPerms());
+                    break;
+                case '_autoscaling':
+                    permissions.push(..._autoscaling.getPerms());
+                    break;
+                case '_cloudfront':
+                    permissions.push(..._cloudfront.getPerms());
+                    break;
+                case '_cloudwatch':
+                    permissions.push(..._cloudwatch.getPerms());
+                    break;
+                case '_cognitoidp':
+                    permissions.push(..._cognitoidp.getPerms());
+                    break;
+                case '_dynamodb':
+                    permissions.push(..._dynamodb.getPerms());
+                    break;
+                case '_ec2':
+                    permissions.push(..._ec2.getPerms());
+                    break;
+                case '_ecr':
+                    permissions.push(..._ecr.getPerms());
+                    break;
+                case '_ecs':
+                    permissions.push(..._ecs.getPerms());
+                    break;
+                case '_elasticache':
+                    permissions.push(..._elasticache.getPerms());
+                    break;
+                case '_elasticloadbalancing':
+                    permissions.push(..._elasticloadbalancing.getPerms());
+                    break;
+                case '_iam':
+                    permissions.push(..._iam.getPerms());
+                    break;
+                case '_lambda':
+                    permissions.push(..._lambda.getPerms());
+                    break;
+                case '_rds':
+                    permissions.push(..._rds.getPerms());
+                    break;
+                case '_route53':
+                    permissions.push(..._route53.getPerms());
+                    break;
+                case '_s3':
+                    permissions.push(..._s3.getPerms());
+                    break;
+                case '_states':
+                    permissions.push(..._states.getPerms());
+                    break;
+                case '_sns':
+                    permissions.push(..._sns.getPerms());
+                    break;
+                case '_sqs':
+                    permissions.push(..._sqs.getPerms());
+                    break;
+                case '_sts':
+                    permissions.push(..._sts.getPerms());
+                    break;
+            }
+            // let perms = _getPerms();
+            // permissions.push(...perms);
 
         });
 
