@@ -21,7 +21,7 @@ export function getPerms() {
 export let s3_ListBuckets = (region, credentials, svcCallsAll) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const AWS_SIG_VER = 'aws4_request';
         const AWS_ACCESS_KEY_ID = credentials.accessKeyId;
         const AWS_SECRET_ACCESS_KEY = credentials.secretAccessKey;
