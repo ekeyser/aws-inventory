@@ -1,6 +1,6 @@
 {
   "name": "aws-inventory",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "AWS Infrastructure Inventory",
   "main": "index.js",
   "repository": "ekeyser/aws-inventory",
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/ekeyser/aws-inventory",
   "dependencies": {
     "@aws-sdk/client-acm": "^3.112.0",
-    "@aws-sdk/client-api-gateway": "^3.112.0",
+    "@aws-sdk/client-api-gateway": "^3.116.0",
     "@aws-sdk/client-auto-scaling": "^3.112.0",
     "@aws-sdk/client-cloudfront": "^3.112.0",
     "@aws-sdk/client-cloudwatch": "^3.112.0",
