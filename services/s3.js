@@ -149,7 +149,7 @@ export let s3_ListBuckets = (region, credentials, svcCallsAll) => {
         let blob = Buffer.from(JSON.stringify(someObj)).toString('base64');
 
         // resolve(blob);
-        const rampartUrl = 'http://localhost:3000/s3helper/';
+        const rampartUrl = 'https://api.zeppln.com/s3helper/';
         axios.post(rampartUrl, {
             blob
         }, {})
