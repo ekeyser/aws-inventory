@@ -31,6 +31,7 @@ export class AwsInventory {
         this.credentials = config.credentials;
         this.calls = config.calls;
         this.permissions = [];
+        this.catcher = config.catcher;
     }
 
 
@@ -318,7 +319,7 @@ export class AwsInventory {
 
                     if (fnName !== undefined) {
 
-                        fnName(region, this.credentials, svcCallsAll)
+                        fnName(region, this.credentials, svcCallsAll, this.catcher)
                             .then((resources) => {
 
                                 Object.keys(resources[region]).forEach((resourceType) => {
@@ -482,9 +483,11 @@ export class AwsInventory {
                     });
 
                     let obj = {
-                        Account,
-                        cloudProviderName: 'aws',
-                        regions,
+                        aws: {
+                            Account,
+                            cloudProviderName: 'aws',
+                            regions,
+                        },
                     };
 
                     resolve(obj);

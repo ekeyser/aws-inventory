@@ -16,16 +16,25 @@ export function getPerms() {
 };
 
 
-export let lambda_ListFunctions = (region, credentials, svcCallsAll) => {
+export let lambda_ListFunctions = (region, credentials, svcCallsAll, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new LambdaClient(
             {
                 region,
                 credentials
             }
         );
+
+
+        // console.log(credentials);
+        const objAttribs = {
+            region,
+            kind: 'Functions',
+            aws_access_key_id: credentials.accessKeyId,
+        };
+
 
         const pConfig = {
             client,
@@ -37,12 +46,16 @@ export let lambda_ListFunctions = (region, credentials, svcCallsAll) => {
         const paginator = paginateListFunctions(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 // oRC.incr();
                 arr.push(...page.Functions);
+                // catcher.handle(page.Functions);
+                // console.log(objAttribs)
+                arr2.push(catcher.handle(page.Functions, objAttribs))
             }
 
         } catch (e) {
