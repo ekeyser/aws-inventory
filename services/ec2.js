@@ -148,7 +148,6 @@ export function ec2_DescribeAvailabilityZones(region, credentials, svcCallsAll, 
             credentials,
         });
 
-        console.log(objAttribs);
         let arr = [];
         const arr2 = [];
         client.send(new DescribeAvailabilityZonesCommand({}))
@@ -189,7 +188,6 @@ export function ec2_DescribeRouteTables(region, credentials, svcCallsAll, objAtt
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,
@@ -235,7 +233,6 @@ export function ec2_DescribeVolumes(region, credentials, svcCallsAll, objAttribs
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,
@@ -278,7 +275,6 @@ export function ec2_DescribeVpcs(region, credentials, svcCallsAll, objAttribs, c
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,
@@ -321,7 +317,6 @@ export function ec2_DescribeSubnets(region, credentials, svcCallsAll, objAttribs
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,
@@ -367,7 +362,6 @@ export function ec2_DescribeInstances(region, credentials, svcCallsAll, objAttri
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,
@@ -385,7 +379,7 @@ export function ec2_DescribeInstances(region, credentials, svcCallsAll, objAttri
             for await (const page of paginator) {
                 page.Reservations.forEach((reservation) => {
                     arr.push(...reservation.Instances)
-                    arr2.push(catcher.handle(page.Instances, objAttribs))
+                    arr2.push(catcher.handle(reservation.Instances, objAttribs))
                 });
             }
 
@@ -415,7 +409,6 @@ export function ec2_DescribeSecurityGroups(region, credentials, svcCallsAll, obj
             credentials,
         });
 
-        console.log(objAttribs);
         const pConfig = {
             client: client,
             pageSize: 100,

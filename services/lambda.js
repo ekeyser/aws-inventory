@@ -28,15 +28,6 @@ export let lambda_ListFunctions = (region, credentials, svcCallsAll, objAttribs,
         );
 
 
-        // console.log(credentials);
-        // const objAttribs = {
-        //     region,
-        //     kind: 'Functions',
-        //     aws_access_key_id: credentials.accessKeyId,
-        // };
-
-        console.log(objAttribs);
-
         const pConfig = {
             client,
             pageSize: 100,
