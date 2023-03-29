@@ -19,10 +19,10 @@ export function getPerms() {
 };
 
 
-export let route53_ListHostedZones = (region, credentials, svcCallsAll) => {
+export let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new Route53Client({
             region,
             credentials,

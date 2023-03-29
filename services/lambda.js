@@ -16,7 +16,7 @@ export function getPerms() {
 };
 
 
-export let lambda_ListFunctions = (region, credentials, svcCallsAll, catcher) => {
+export let lambda_ListFunctions = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         serviceCallManifest = svcCallsAll;
@@ -29,12 +29,13 @@ export let lambda_ListFunctions = (region, credentials, svcCallsAll, catcher) =>
 
 
         // console.log(credentials);
-        const objAttribs = {
-            region,
-            kind: 'Functions',
-            aws_access_key_id: credentials.accessKeyId,
-        };
+        // const objAttribs = {
+        //     region,
+        //     kind: 'Functions',
+        //     aws_access_key_id: credentials.accessKeyId,
+        // };
 
+        console.log(objAttribs);
 
         const pConfig = {
             client,

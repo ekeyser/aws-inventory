@@ -26,10 +26,10 @@ export function getPerms() {
 }
 
 
-export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll) => {
+export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new CloudFrontClient(
             {
                 region,
@@ -64,10 +64,10 @@ export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll) => 
 };
 
 
-export let cloudfront_ListDistributions = (region, credentials, svcCallsAll) => {
+export let cloudfront_ListDistributions = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new CloudFrontClient(
             {
                 region,

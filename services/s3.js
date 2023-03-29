@@ -18,7 +18,7 @@ export function getPerms() {
 };
 
 
-export let s3_ListBuckets = (region, credentials, svcCallsAll) => {
+export let s3_ListBuckets = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         serviceCallManifest = svcCallsAll;

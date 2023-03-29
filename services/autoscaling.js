@@ -27,10 +27,10 @@ export function getPerms() {
 };
 
 
-export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCallsAll) => {
+export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new AutoScalingClient(
             {
                 region,
@@ -70,10 +70,10 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCall
 };
 
 
-export let autoscaling_DescribeLaunchConfigurations = (region, credentials, svcCallsAll) => {
+export let autoscaling_DescribeLaunchConfigurations = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new AutoScalingClient(
             {
                 region,

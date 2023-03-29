@@ -16,10 +16,10 @@ export function getPerms() {
 };
 
 
-export let cloudwatch_DescribeAlarms = (region, credentials, svcCallsAll) => {
+export let cloudwatch_DescribeAlarms = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new CloudWatchClient(
             {
                 region,

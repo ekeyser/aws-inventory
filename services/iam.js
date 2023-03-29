@@ -61,7 +61,7 @@ export function getPerms() {
 };
 
 
-let iam_GetUserPolicy = (user, policies, client) => {
+let iam_GetUserPolicy = (user, policies, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         let arrPromises = [];
@@ -95,7 +95,7 @@ let iam_GetUserPolicy = (user, policies, client) => {
     });
 };
 
-let iam_ListUserPolicies = (users, client) => {
+let iam_ListUserPolicies = (users, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         const pConfig = {
@@ -140,10 +140,10 @@ let iam_ListUserPolicies = (users, client) => {
     });
 };
 
-export let iam_ListUsers = (region, credentials, svcCallsAll) => {
+export let iam_ListUsers = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,
@@ -184,7 +184,7 @@ export let iam_ListUsers = (region, credentials, svcCallsAll) => {
 };
 
 
-let iam_GetPolicyVersion = (policy, client) => {
+let iam_GetPolicyVersion = (policy, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -233,7 +233,7 @@ let iam_GetPolicyVersion = (policy, client) => {
 };
 
 
-let iam_GetPolicy = (policy, client) => {
+let iam_GetPolicy = (policy, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         const PolicyArn = policy.Arn;
@@ -259,10 +259,10 @@ let iam_GetPolicy = (policy, client) => {
 };
 
 
-export let iam_ListPolicies = (region, credentials, svcCallsAll) => {
+export let iam_ListPolicies = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,
@@ -314,10 +314,10 @@ export let iam_ListPolicies = (region, credentials, svcCallsAll) => {
 };
 
 
-export let iam_ListRoles = (region, credentials, svcCallsAll) => {
+export let iam_ListRoles = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new IAMClient({
             region,
             credentials,

@@ -18,7 +18,7 @@ export function getPerms() {
 };
 
 
-export let sts_GetCallerIdentity = (region, credentials) => {
+export let sts_GetCallerIdentity = (region, credentials, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         let client = new STSClient({

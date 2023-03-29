@@ -74,7 +74,7 @@ export function getPerms() {
 };
 
 
-let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials) => {
+let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -117,7 +117,7 @@ let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials) => {
 };
 
 
-let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials) => {
+let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new RDSClient(
@@ -160,10 +160,10 @@ let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials) => {
 };
 
 
-export let rds_DescribeDBProxyEndpoints = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBProxyEndpoints = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -202,10 +202,10 @@ export let rds_DescribeDBProxyEndpoints = (region, credentials, svcCallsAll) => 
 };
 
 
-export let rds_DescribeDBProxies = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBProxies = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -271,10 +271,10 @@ export let rds_DescribeDBProxies = (region, credentials, svcCallsAll) => {
 };
 
 
-export let rds_DescribeDBSubnetGroups = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBSubnetGroups = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -315,10 +315,10 @@ export let rds_DescribeDBSubnetGroups = (region, credentials, svcCallsAll) => {
 };
 
 
-export let rds_DescribeDBParameterGroups = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBParameterGroups = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -359,10 +359,10 @@ export let rds_DescribeDBParameterGroups = (region, credentials, svcCallsAll) =>
 };
 
 
-export let rds_DescribeOptionGroups = (region, credentials, svcCallsAll) => {
+export let rds_DescribeOptionGroups = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -403,10 +403,10 @@ export let rds_DescribeOptionGroups = (region, credentials, svcCallsAll) => {
 };
 
 
-export let rds_DescribeDBClusters = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBClusters = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,
@@ -447,10 +447,10 @@ export let rds_DescribeDBClusters = (region, credentials, svcCallsAll) => {
 };
 
 
-export let rds_DescribeDBInstances = (region, credentials, svcCallsAll) => {
+export let rds_DescribeDBInstances = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new RDSClient(
             {
                 region,

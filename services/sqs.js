@@ -26,7 +26,7 @@ export function getPerms() {
 };
 
 
-function sqs_GetQueueAttributes(QueueUrl, client) {
+function sqs_GetQueueAttributes(QueueUrl, client, objAttribs, catcher) {
     return new Promise((resolve, reject) => {
 
         client.send(new GetQueueAttributesCommand(
@@ -47,10 +47,10 @@ function sqs_GetQueueAttributes(QueueUrl, client) {
 }
 
 
-export function sqs_ListQueues(region, credentials, svcCallsAll) {
+export function sqs_ListQueues(region, credentials, svcCallsAll, objAttribs, catcher) {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new SQSClient({
             region,
             credentials,

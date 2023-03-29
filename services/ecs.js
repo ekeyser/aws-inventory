@@ -55,7 +55,7 @@ export function getPerms() {
 };
 
 
-let ecs_DescribeServices = (cluster, services, client, region) => {
+let ecs_DescribeServices = (cluster, services, client, region, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         let obj = {
@@ -81,7 +81,7 @@ let ecs_DescribeServices = (cluster, services, client, region) => {
 };
 
 
-let ecs_ListClusterServices = (cluster, client, region) => {
+let ecs_ListClusterServices = (cluster, client, region, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         const pConfig = {
@@ -132,7 +132,7 @@ let ecs_ListClusterServices = (cluster, client, region) => {
 };
 
 
-let ecs_DescribeClusters = (clusters, client, region) => {
+let ecs_DescribeClusters = (clusters, client, region, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeClustersCommand({
@@ -155,10 +155,10 @@ let ecs_DescribeClusters = (clusters, client, region) => {
 };
 
 
-export let ecs_ListClusters = (region, credentials, svcCallsAll) => {
+export let ecs_ListClusters = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new ECSClient(
             {
                 region,
@@ -210,7 +210,7 @@ export let ecs_ListClusters = (region, credentials, svcCallsAll) => {
 };
 
 
-let ecs_DescribeTaskDefinition = (taskDefinitionArn, client) => {
+let ecs_DescribeTaskDefinition = (taskDefinitionArn, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeTaskDefinitionCommand(
@@ -228,10 +228,10 @@ let ecs_DescribeTaskDefinition = (taskDefinitionArn, client) => {
 };
 
 
-export let ecs_ListTaskDefinitions = (region, credentials, svcCallsAll) => {
+export let ecs_ListTaskDefinitions = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new ECSClient(
             {
                 region,

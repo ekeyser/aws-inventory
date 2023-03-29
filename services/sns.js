@@ -40,7 +40,7 @@ export function getPerms() {
 };
 
 
-let sns_GetSubscriptionAttributes = (SubscriptionArn, client) => {
+let sns_GetSubscriptionAttributes = (SubscriptionArn, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         if (SubscriptionArn !== 'PendingConfirmation') {
@@ -62,10 +62,10 @@ let sns_GetSubscriptionAttributes = (SubscriptionArn, client) => {
 };
 
 
-export let sns_ListSubscriptions = (region, credentials, svcCallsAll) => {
+export let sns_ListSubscriptions = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new SNSClient({
             region,
             credentials,
@@ -120,7 +120,7 @@ export let sns_ListSubscriptions = (region, credentials, svcCallsAll) => {
 };
 
 
-let sns_GetTopicAttributes = (TopicArn, client) => {
+let sns_GetTopicAttributes = (TopicArn, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         client.send(new GetTopicAttributesCommand(
@@ -139,10 +139,10 @@ let sns_GetTopicAttributes = (TopicArn, client) => {
 };
 
 
-export let sns_ListTopics = (region, credentials, svcCallsAll) => {
+export let sns_ListTopics = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new SNSClient({
             region,
             credentials,

@@ -47,7 +47,7 @@ export function getPerms() {
 };
 
 
-function states_DescribeActivity(activityArn, client) {
+function states_DescribeActivity(activityArn, client, objAttribs, catcher) {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeActivityCommand(
@@ -66,7 +66,7 @@ function states_DescribeActivity(activityArn, client) {
 }
 
 
-function states_DescribeStateMachine(stateMachineArn, client) {
+function states_DescribeStateMachine(stateMachineArn, client, objAttribs, catcher) {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeStateMachineCommand(
@@ -85,10 +85,10 @@ function states_DescribeStateMachine(stateMachineArn, client) {
 }
 
 
-export function states_ListActivities(region, credentials, svcCallsAll) {
+export function states_ListActivities(region, credentials, svcCallsAll, objAttribs, catcher) {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new SFNClient({
             region,
             credentials,
@@ -136,10 +136,10 @@ export function states_ListActivities(region, credentials, svcCallsAll) {
 };
 
 
-export function states_ListStateMachines(region, credentials, svcCallsAll) {
+export function states_ListStateMachines(region, credentials, svcCallsAll, objAttribs, catcher) {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         let client = new SFNClient({
             region,
             credentials,

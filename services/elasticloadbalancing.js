@@ -31,7 +31,7 @@ export function getPerms() {
 };
 
 
-let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client) => {
+let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         client.send(new DescribeLoadBalancerAttributesCommand(
@@ -49,10 +49,10 @@ let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client)
 };
 
 
-export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, svcCallsAll) => {
+export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
-      serviceCallManifest = svcCallsAll;
+        serviceCallManifest = svcCallsAll;
         const client = new ElasticLoadBalancingV2Client(
             {
                 region,

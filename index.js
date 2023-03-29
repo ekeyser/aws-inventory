@@ -183,129 +183,171 @@ export class AwsInventory {
 
 
                     let fnName;
+                    let kind;
                     switch (fName) {
                         case 'acm_ListCertificates':
+                            kind = 'Certificates';
                             fnName = _acm.acm_ListCertificates;
                             break;
                         case 'apigateway_GetRestApis':
+                            kind = 'RestApis';
                             fnName = _apigateway.apigateway_Begin;
                             // fnName = _apigateway.apigateway_GetRestApis;
                             break;
                         case 'autoscaling_DescribeLaunchConfigurations':
+                            kind = 'LaunchConfigurations';
                             fnName = _autoscaling.autoscaling_DescribeLaunchConfigurations;
                             break;
                         case 'autoscaling_DescribeAutoScalingGroups':
+                            kind = 'AutoScalingGroups';
                             fnName = _autoscaling.autoscaling_DescribeAutoScalingGroups;
                             break;
                         case 'cloudfront_ListCachePolicies':
+                            kind = 'CachePolicies';
                             fnName = _cloudfront.cloudfront_ListCachePolicies;
                             break;
                         case 'cloudfront_ListDistributions':
+                            kind = 'Distributions';
                             fnName = _cloudfront.cloudfront_ListDistributions;
                             break;
                         case 'cloudwatch_DescribeAlarms':
+                            kind = 'Alarms';
                             fnName = _cloudwatch.cloudwatch_DescribeAlarms;
                             break;
                         case 'cognito-idp_ListUserPools':
+                            kind = 'UserPools';
                             fnName = _cognitoidp.cognitoidp_ListUserPools;
                             break;
                         case 'dynamodb_ListTables':
+                            kind = 'Tables';
                             fnName = _dynamodb.dynamodb_ListTables;
                             break;
                         case 'ec2_DescribeVpcs':
+                            kind = 'Vpcs';
                             fnName = _ec2.ec2_DescribeVpcs;
                             break;
                         case 'ec2_DescribeAvailabilityZones':
+                            kind = 'AvailabilityZones';
                             fnName = _ec2.ec2_DescribeAvailabilityZones;
                             break;
                         case 'ec2_DescribeSecurityGroups':
+                            kind = 'SecurityGroups';
                             fnName = _ec2.ec2_DescribeSecurityGroups;
                             break;
                         case 'ec2_DescribeVolumes':
+                            kind = 'Volumes';
                             fnName = _ec2.ec2_DescribeVolumes;
                             break;
                         case 'ec2_DescribeRouteTables':
+                            kind = 'RouteTables';
                             fnName = _ec2.ec2_DescribeRouteTables;
                             break;
                         case 'ec2_DescribeSubnets':
+                            kind = 'Subnets';
                             fnName = _ec2.ec2_DescribeSubnets;
                             break;
                         case 'ec2_DescribeInstances':
+                            kind = 'Instances';
                             fnName = _ec2.ec2_DescribeInstances;
                             break;
                         case 'ecr_DescribeRepositories':
+                            kind = 'Repositories';
                             fnName = _ecr.ecr_DescribeRepositories;
                             break;
                         case 'ecs_ListClusters':
+                            kind = 'Clusters';
                             fnName = _ecs.ecs_ListClusters;
                             break;
                         case 'ecs_ListTaskDefinitions':
+                            kind = 'TaskDefinitions';
                             fnName = _ecs.ecs_ListTaskDefinitions;
                             break;
                         case 'elasticache_DescribeCacheClusters':
+                            kind = 'CacheClusters';
                             fnName = _elasticache.elasticache_DescribeCacheClusters;
                             break;
                         case 'elasticache_DescribeReplicationGroups':
+                            kind = 'ReplicationGroups';
                             fnName = _elasticache.elasticache_DescribeReplicationGroups;
                             break;
                         case 'elasticache_DescribeCacheSubnetGroups':
+                            kind = 'CacheSubnetGroups';
                             fnName = _elasticache.elasticache_DescribeCacheSubnetGroups;
                             break;
                         case 'elasticloadbalancing_DescribeLoadBalancers':
+                            kind = 'LoadBalancers';
                             fnName = _elasticloadbalancing.elasticloadbalancing_DescribeLoadBalancers;
                             break;
                         case 'iam_ListUsers':
+                            kind = 'Users';
                             fnName = _iam.iam_ListUsers;
                             break;
                         case 'iam_ListPolicies':
+                            kind = 'Policies';
                             fnName = _iam.iam_ListPolicies;
                             break;
                         case 'iam_ListRoles':
+                            kind = 'Roles';
                             fnName = _iam.iam_ListRoles;
                             break;
                         case 'lambda_ListFunctions':
+                            kind = 'Functions';
                             fnName = _lambda.lambda_ListFunctions;
                             break;
                         case 'rds_DescribeDBSubnetGroups':
+                            kind = 'DBSubnetGroups';
                             fnName = _rds.rds_DescribeDBSubnetGroups;
                             break;
                         case 'rds_DescribeDBParameterGroups':
+                            kind = 'DBParameterGroups';
                             fnName = _rds.rds_DescribeDBParameterGroups;
                             break;
                         case 'rds_DescribeOptionGroups':
+                            kind = 'OptionGroups';
                             fnName = _rds.rds_DescribeOptionGroups;
                             break;
                         case 'rds_DescribeDBClusters':
+                            kind = 'DBClusters';
                             fnName = _rds.rds_DescribeDBClusters;
                             break;
                         case 'rds_DescribeDBInstances':
+                            kind = 'DBInstances';
                             fnName = _rds.rds_DescribeDBInstances;
                             break;
                         case 'rds_DescribeDBProxies':
+                            kind = 'DBProxies';
                             fnName = _rds.rds_DescribeDBProxies;
                             break;
                         case 'rds_DescribeDBProxyEndpoints':
+                            kind = 'DBProxyEndpoints';
                             fnName = _rds.rds_DescribeDBProxyEndpoints;
                             break;
                         case 'route53_ListHostedZones':
+                            kind = 'HostedZones';
                             fnName = _route53.route53_ListHostedZones;
                             break;
                         case 's3_ListBuckets':
+                            kind = 'Buckets';
                             fnName = _s3.s3_ListBuckets;
                             break;
                         case 'sns_ListSubscriptions':
+                            kind = 'Subscriptions';
                             fnName = _sns.sns_ListSubscriptions;
                             break;
                         case 'sns_ListTopics':
+                            kind = 'Topics';
                             fnName = _sns.sns_ListTopics;
                             break;
                         case 'sqs_ListQueues':
+                            kind = 'Queues';
                             fnName = _sqs.sqs_ListQueues;
                             break;
                         case 'states_ListActivities':
+                            kind = 'Activities';
                             fnName = _states.states_ListActivities;
                             break;
                         case 'states_ListStateMachines':
+                            kind = 'StateMachines';
                             fnName = _states.states_ListStateMachines;
                             break;
                         // case 'states_ListExecutions':
@@ -317,9 +359,16 @@ export class AwsInventory {
                     }
 
 
+                    const objAttribs = {
+                        region,
+                        kind,
+                        aws_access_key_id: credentials.accessKeyId,
+                    };
+
+
                     if (fnName !== undefined) {
 
-                        fnName(region, this.credentials, svcCallsAll, this.catcher)
+                        fnName(region, this.credentials, svcCallsAll, objAttribs, this.catcher)
                             .then((resources) => {
 
                                 Object.keys(resources[region]).forEach((resourceType) => {
