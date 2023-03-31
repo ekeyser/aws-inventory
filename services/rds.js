@@ -96,11 +96,13 @@ let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, objAttr
         const paginator = paginateDescribeDBProxyTargetGroups(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.TargetGroups);
+                arr2.push(catcher.handle(page.TargetGroups, objAttribs))
             }
 
         } catch (e) {
@@ -139,11 +141,13 @@ let rds_DescribeDBProxyTargets = (DBProxyName, region, credentials, objAttribs, 
         const paginator = paginateDescribeDBProxyTargets(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.Targets);
+                arr2.push(catcher.handle(page.Targets, objAttribs))
             }
 
         } catch (e) {
@@ -181,11 +185,13 @@ export let rds_DescribeDBProxyEndpoints = (region, credentials, svcCallsAll, obj
         const paginator = paginateDescribeDBProxyEndpoints(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBProxyEndpoints);
+                arr2.push(catcher.handle(page.DBProxyEndpoints, objAttribs))
             }
 
         } catch (e) {
@@ -223,11 +229,13 @@ export let rds_DescribeDBProxies = (region, credentials, svcCallsAll, objAttribs
         const paginator = paginateDescribeDBProxies(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBProxies);
+                arr2.push(catcher.handle(page.DBProxies, objAttribs))
             }
 
         } catch (e) {
@@ -242,14 +250,14 @@ export let rds_DescribeDBProxies = (region, credentials, svcCallsAll, objAttribs
         };
 
 
-        let arr2 = [];
+        let arr3 = [];
         arr.forEach((objProxy, i) => {
-            arr2.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials));
-            arr2.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials));
+            arr3.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials));
+            arr3.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials));
         });
 
 
-        Promise.all(arr2)
+        Promise.all(arr3)
             .then((arrP) => {
 
                 arrP.forEach((obj) => {
@@ -292,11 +300,13 @@ export let rds_DescribeDBSubnetGroups = (region, credentials, svcCallsAll, objAt
         const paginator = paginateDescribeDBSubnetGroups(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBSubnetGroups);
+                arr2.push(catcher.handle(page.DBSubnetGroups, objAttribs))
             }
 
         } catch (e) {
@@ -336,11 +346,13 @@ export let rds_DescribeDBParameterGroups = (region, credentials, svcCallsAll, ob
         const paginator = paginateDescribeDBParameterGroups(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBParameterGroups);
+                arr2.push(catcher.handle(page.DBParameterGroups, objAttribs))
             }
 
         } catch (e) {
@@ -380,11 +392,13 @@ export let rds_DescribeOptionGroups = (region, credentials, svcCallsAll, objAttr
         const paginator = paginateDescribeOptionGroups(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.OptionGroupsList);
+                arr2.push(catcher.handle(page.OptionGroupsList, objAttribs))
             }
 
         } catch (e) {
@@ -424,11 +438,13 @@ export let rds_DescribeDBClusters = (region, credentials, svcCallsAll, objAttrib
         const paginator = paginateDescribeDBClusters(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBClusters);
+                arr2.push(catcher.handle(page.DBClusters, objAttribs))
             }
 
         } catch (e) {
@@ -468,11 +484,13 @@ export let rds_DescribeDBInstances = (region, credentials, svcCallsAll, objAttri
         const paginator = paginateDescribeDBInstances(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DBInstances);
+                arr2.push(catcher.handle(page.DBInstances, objAttribs))
             }
         } catch (e) {
             reject(e);

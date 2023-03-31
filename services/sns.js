@@ -81,11 +81,13 @@ export let sns_ListSubscriptions = (region, credentials, svcCallsAll, objAttribs
         const paginator = paginateListSubscriptions(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.Subscriptions);
+                arr2.push(catcher.handle(page.Subscriptions, objAttribs))
             }
 
         } catch (e) {
@@ -93,9 +95,9 @@ export let sns_ListSubscriptions = (region, credentials, svcCallsAll, objAttribs
         }
 
 
-        let arr2 = [];
+        let arr3 = [];
 
-        arr2.push(arr.forEach((Subscription, i) => {
+        arr3.push(arr.forEach((Subscription, i) => {
             sns_GetSubscriptionAttributes(Subscription.SubscriptionArn, client)
                 .then((p) => {
 
@@ -104,7 +106,7 @@ export let sns_ListSubscriptions = (region, credentials, svcCallsAll, objAttribs
                 });
         }));
 
-        Promise.all(arr2)
+        Promise.all(arr3)
             .then((aP) => {
 
                 let objGlobal = {
@@ -158,20 +160,22 @@ export let sns_ListTopics = (region, credentials, svcCallsAll, objAttribs, catch
         const paginator = paginateListTopics(pConfig, cmdParams);
 
         const arr = [];
+        const arr2 = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.Topics);
+                arr2.push(catcher.handle(page.Topics, objAttribs))
             }
 
         } catch (e) {
             reject(e);
         }
 
-        let arr2 = [];
+        let arr3 = [];
 
-        arr2.push(arr.forEach((Topic, i) => {
+        arr3.push(arr.forEach((Topic, i) => {
             sns_GetTopicAttributes(Topic.TopicArn, client)
                 .then((p) => {
 
@@ -180,7 +184,7 @@ export let sns_ListTopics = (region, credentials, svcCallsAll, objAttribs, catch
                 });
         }));
 
-        Promise.all(arr2)
+        Promise.all(arr3)
             .then((aP) => {
 
                 let objGlobal = {

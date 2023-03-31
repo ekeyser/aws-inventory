@@ -66,12 +66,14 @@ export function sqs_ListQueues(region, credentials, svcCallsAll, objAttribs, cat
         const paginator = paginateListQueues(pConfig, cmdParams);
 
         const arr = [];
+        const arr2= [];
 
         try {
 
             for await (const page of paginator) {
                 if (page.QueueUrls !== undefined) {
                     arr.push(...page.QueueUrls);
+                    arr2.push(catcher.handle(page.QueueUrls, objAttribs))
                 }
             }
 
