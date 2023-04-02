@@ -155,7 +155,7 @@ export function ec2_DescribeAvailabilityZones(region, credentials, svcCallsAll, 
                 for (let i = 0; i < data.AvailabilityZones.length; i++) {
                     let AvailabilityZone = data.AvailabilityZones[i];
                     arr.push(AvailabilityZone);
-                    arr2.push(catcher.handle(AvailabilityZone, objAttribs))
+                    arr2.push(catcher.handle([AvailabilityZone], objAttribs))
                 }
                 // data.AvailabilityZones.forEach((AvailabilityZone) => {
                 //     if (this.objGlobal[region].AvailabilityZones === undefined) {

@@ -71,7 +71,7 @@ export function getPerms() {
             "initiator": false
         }
     ];
-};
+}
 
 
 let rds_DescribeDBProxyTargetGroups = (DBProxyName, region, credentials, objAttribs, catcher) => {
@@ -252,8 +252,8 @@ export let rds_DescribeDBProxies = (region, credentials, svcCallsAll, objAttribs
 
         let arr3 = [];
         arr.forEach((objProxy, i) => {
-            arr3.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials));
-            arr3.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials));
+            arr3.push(rds_DescribeDBProxyTargets(objProxy.DBProxyName, region, credentials, objAttribs, catcher));
+            arr3.push(rds_DescribeDBProxyTargetGroups(objProxy.DBProxyName, region, credentials, objAttribs, catcher));
         });
 
 

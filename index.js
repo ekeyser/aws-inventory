@@ -159,7 +159,7 @@ export class AwsInventory {
     }
 
 
-    run(region, strService, apiCall, svcCallsAll) {
+    run(Account, region, strService, apiCall, svcCallsAll) {
         return new Promise((resolve, reject) => {
 
             let credentials = this.credentials;
@@ -363,6 +363,7 @@ export class AwsInventory {
                         region,
                         kind,
                         aws_access_key_id: credentials.accessKeyId,
+                        Account,
                     };
 
 
@@ -506,17 +507,19 @@ export class AwsInventory {
 
 
             let arrRequests = [];
-            arrRequests.push(this.obtainAccountNumber('us-east-1')
-                .then((data) => {
-                    Account = data.Account;
-                }));
+
+            Account = await this.obtainAccountNumber('us-east-1');
+            // arrRequests.push(this.obtainAccountNumber('us-east-1')
+            //     .then((data) => {
+            //         Account = data.Account;
+            //     }));
 
 
             Object.keys(this.calls).forEach((strRegion) => {
                 let arrServices = Object.keys(this.calls[strRegion])
                 arrServices.forEach((strService) => {
                     this.calls[strRegion][strService].forEach((apiCall) => {
-                        arrRequests.push(this.run(strRegion, strService, apiCall, this.calls[strRegion][strService]));
+                        arrRequests.push(this.run(Account.Account, strRegion, strService, apiCall, this.calls[strRegion][strService]));
                     });
                 });
             });

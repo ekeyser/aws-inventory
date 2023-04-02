@@ -1,6 +1,6 @@
 {
   "name": "aws-inventory",
-  "version": "0.4.3",
+  "version": "0.4.10",
   "description": "AWS Infrastructure Inventory",
   "main": "index.js",
   "repository": "ekeyser/aws-inventory",
