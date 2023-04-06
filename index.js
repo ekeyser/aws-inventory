@@ -32,6 +32,7 @@ export class AwsInventory {
         this.calls = config.calls;
         this.permissions = [];
         this.catcher = config.catcher;
+        this.cohort = config.cohort;
     }
 
 
@@ -364,6 +365,7 @@ export class AwsInventory {
                         kind,
                         aws_access_key_id: credentials.accessKeyId,
                         Account,
+                        cohort: this.cohort,
                     };
 
 
