@@ -42,6 +42,7 @@ export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll, obj
                 CachePolicies: []
             }
         };
+        const _arrC = [];
 
         client.send(new ListCachePoliciesCommand({}))
             .then((data) => {
@@ -50,6 +51,7 @@ export let cloudfront_ListCachePolicies = (region, credentials, svcCallsAll, obj
                     //     this.objGlobal[region].CachePolicies = [];
                     // }
                     obj[region].CachePolicies.push(cachePolicy);
+                    _arrC.push(catcher.handle(cachePolicy, objAttribs));
 
                     // this.objGlobal[region].CachePolicies.push(cachePolicy);
                 });
@@ -85,11 +87,13 @@ export let cloudfront_ListDistributions = (region, credentials, svcCallsAll, obj
         const paginator = paginateListDistributions(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.DistributionList.Items);
+                _arrC.push(catcher.handle(page.DistributionList.Items, objAttribs));
             }
         } catch (e) {
             reject(e);

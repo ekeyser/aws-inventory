@@ -52,7 +52,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 let ecs_DescribeServices = (cluster, services, client, region, objAttribs, catcher) => {
@@ -176,11 +176,13 @@ export let ecs_ListClusters = (region, credentials, svcCallsAll, objAttribs, cat
         const paginator = paginateListClusters(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.clusterArns);
+                _arrC.push(catcher.handle(page.clusterArns, objAttribs));
             }
         } catch (e) {
             reject(e);
@@ -249,11 +251,13 @@ export let ecs_ListTaskDefinitions = (region, credentials, svcCallsAll, objAttri
         const paginator = paginateListTaskDefinitions(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.taskDefinitionArns);
+                _arrC.push(catcher.handle(page.taskDefinitionArns, objAttribs));
             }
         } catch (e) {
             reject(e);

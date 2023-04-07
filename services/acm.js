@@ -65,11 +65,13 @@ export function acm_ListCertificates(region, credentials, svcCallsAll, objAttrib
         const paginator = paginateListCertificates(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.CertificateSummaryList);
+                _arrC.push(catcher.handle(page.CertificateSummaryList, objAttribs));
             }
         } catch (e) {
             reject(e);

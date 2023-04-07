@@ -24,7 +24,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCallsAll, objAttribs, catcher) => {
@@ -48,11 +48,13 @@ export let autoscaling_DescribeAutoScalingGroups = (region, credentials, svcCall
         const paginator = paginateDescribeAutoScalingGroups(pConfig, cmdParams);
 
         const arr = [];
+        const _arrc = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.AutoScalingGroups);
+                _arrC.push(catcher.handle(page.AutoScalingGroups, objAttribs));
             }
         } catch (e) {
             reject(e);
@@ -91,11 +93,13 @@ export let autoscaling_DescribeLaunchConfigurations = (region, credentials, svcC
         const paginator = paginateDescribeLaunchConfigurations(pConfig, cmdParams);
 
         const arr = [];
+        const _arrc = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.LaunchConfigurations);
+                _arrC.push(catcher.handle(page.LaunchConfigurations, objAttribs));
             }
 
         } catch (e) {

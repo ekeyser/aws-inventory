@@ -37,11 +37,13 @@ export let ecr_DescribeRepositories = (region, credentials, svcCallsAll, objAttr
         const paginator = paginateDescribeRepositories(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.repositories);
+                _arrC.push(catcher.handle(page.repositories, objAttribs));
             }
         } catch (e) {
             reject(e);

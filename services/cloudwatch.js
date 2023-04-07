@@ -13,7 +13,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let cloudwatch_DescribeAlarms = (region, credentials, svcCallsAll, objAttribs, catcher) => {
@@ -37,11 +37,13 @@ export let cloudwatch_DescribeAlarms = (region, credentials, svcCallsAll, objAtt
         const paginator = paginateDescribeAlarms(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.MetricAlarms);
+                _arrC.push(catcher.handle(page.MetricAlarms, objAttribs));
             }
 
         } catch (e) {

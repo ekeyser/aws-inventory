@@ -37,7 +37,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 let sns_GetSubscriptionAttributes = (SubscriptionArn, client, objAttribs, catcher) => {

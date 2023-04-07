@@ -130,10 +130,12 @@ export let cognitoidp_ListUserPools = (region, credentials, svcCallsAll, objAttr
         const paginator = paginateListUserPools(pConfig, {});
 
         const arr = [];
+        const _arrC = [];
 
         try {
             for await (const page of paginator) {
-                arr.push(...page.UserPools)
+                arr.push(...page.UserPools);
+                _arrC.push(catcher.handle(page.UserPools, objAttribs));
             }
         } catch (e) {
             reject(e);

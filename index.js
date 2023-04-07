@@ -147,16 +147,16 @@ export class AwsInventory {
 
 
     obtainAccountNumber(region) {
-        return new Promise((resolve, reject) => {
+        // return new Promise((resolve, reject) => {
 
-            _sts.sts_GetCallerIdentity(region, this.credentials)
-                .then((p) => {
-                    resolve(p);
-                })
-                .catch((e) => {
-                    reject(e);
-                });
-        });
+            return _sts.sts_GetCallerIdentity(region, this.credentials);
+                // .then((p) => {
+                //     resolve(p);
+                // })
+                // .catch((e) => {
+                //     reject(e);
+                // });
+        // });
     }
 
 

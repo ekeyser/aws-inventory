@@ -44,7 +44,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 function states_DescribeActivity(activityArn, client, objAttribs, catcher) {
@@ -103,11 +103,13 @@ export function states_ListActivities(region, credentials, svcCallsAll, objAttri
         const paginator = paginateListActivities(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
-                arr.push(...page.stateMachines);
+                arr.push(...page.activities);
+                _arrC.push(catcher.handle(page.activities, objAttribs));
             }
 
         } catch (e) {
@@ -133,7 +135,7 @@ export function states_ListActivities(region, credentials, svcCallsAll, objAttri
             });
 
     });
-};
+}
 
 
 export function states_ListStateMachines(region, credentials, svcCallsAll, objAttribs, catcher) {
@@ -154,11 +156,13 @@ export function states_ListStateMachines(region, credentials, svcCallsAll, objAt
         const paginator = paginateListStateMachines(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.stateMachines);
+                _arrC.push(catcher.handle(page.stateMachines, objAttribs));
             }
 
         } catch (e) {

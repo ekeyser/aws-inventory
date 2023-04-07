@@ -38,7 +38,7 @@ export let lambda_ListFunctions = (region, credentials, svcCallsAll, objAttribs,
         const paginator = paginateListFunctions(pConfig, cmdParams);
 
         const arr = [];
-        const arr2 = [];
+        const _arrC = [];
 
         try {
 
@@ -47,7 +47,7 @@ export let lambda_ListFunctions = (region, credentials, svcCallsAll, objAttribs,
                 arr.push(...page.Functions);
                 // catcher.handle(page.Functions);
                 // console.log(objAttribs)
-                arr2.push(catcher.handle(page.Functions, objAttribs))
+                _arrC.push(catcher.handle(page.Functions, objAttribs));
             }
 
         } catch (e) {

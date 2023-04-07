@@ -23,7 +23,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 function sqs_GetQueueAttributes(QueueUrl, client, objAttribs, catcher) {

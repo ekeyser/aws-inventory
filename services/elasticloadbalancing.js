@@ -28,7 +28,7 @@ export function getPerms() {
             "initiator": false
         }
     ];
-};
+}
 
 
 let elasticloadbalancing_DescribeLoadBalancerAttributes = (loadbalancer, client, objAttribs, catcher) => {
@@ -70,11 +70,13 @@ export let elasticloadbalancing_DescribeLoadBalancers = (region, credentials, sv
         const paginator = paginateDescribeLoadBalancers(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.LoadBalancers);
+                _arrC.push(catcher.handle(page.LoadBalancers, objAttribs));
             }
         } catch (e) {
             reject(e);

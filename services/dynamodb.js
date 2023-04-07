@@ -19,7 +19,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 let dynamodb_DescribeTable = (TableName, client, objAttribs, catcher) => {
@@ -61,11 +61,13 @@ export let dynamodb_ListTables = (region, credentials, svcCallsAll, objAttribs, 
         const paginator = paginateListTables(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.TableNames);
+                _arrC.push(catcher.handle(page.TableNames, objAttribs));
             }
         } catch (e) {
             reject(e);

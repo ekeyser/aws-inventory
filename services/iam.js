@@ -58,7 +58,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 let iam_GetUserPolicy = (user, policies, client, objAttribs, catcher) => {
@@ -159,11 +159,13 @@ export let iam_ListUsers = (region, credentials, svcCallsAll, objAttribs, catche
         const paginator = paginateListUsers(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.Users);
+                _arrC.push(catcher.handle(page.Users, objAttribs));
             }
         } catch (e) {
             reject(e);
@@ -280,11 +282,13 @@ export let iam_ListPolicies = (region, credentials, svcCallsAll, objAttribs, cat
         const paginator = paginateListPolicies(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.Policies);
+                _arrC.push(catcher.handle(page.Policies, objAttribs));
             }
         } catch (e) {
             reject(e);
@@ -333,10 +337,12 @@ export let iam_ListRoles = (region, credentials, svcCallsAll, objAttribs, catche
         const paginator = paginateListRoles(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
             for await (const page of paginator) {
                 arr.push(...page.Roles);
+                _arrC.push(catcher.handle(page.Roles, objAttribs));
             }
         } catch (e) {
             reject(e);

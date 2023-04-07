@@ -29,7 +29,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let elasticache_DescribeCacheClusters = (region, credentials, svcCallsAll, objAttribs, catcher) => {
@@ -56,11 +56,13 @@ export let elasticache_DescribeCacheClusters = (region, credentials, svcCallsAll
         const paginator = paginateDescribeCacheClusters(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.CacheClusters);
+                _arrC.push(catcher.handle(page.CacheClusters, objAttribs));
             }
         } catch (e) {
             reject(e);
@@ -99,11 +101,13 @@ export let elasticache_DescribeCacheSubnetGroups = (region, credentials, svcCall
         const paginator = paginateDescribeCacheSubnetGroups(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.CacheSubnetGroups);
+                _arrC.push(catcher.handle(page.CacheSubnetGroups, objAttribs));
             }
 
         } catch (e) {
@@ -143,11 +147,13 @@ export let elasticache_DescribeReplicationGroups = (region, credentials, svcCall
         const paginator = paginateDescribeReplicationGroups(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.ReplicationGroups);
+                _arrC.push(catcher.handle(page.ReplicationGroups, objAttribs));
             }
 
         } catch (e) {

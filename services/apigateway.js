@@ -121,7 +121,7 @@ let qR = () => {
 };
 
 
-let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client, region) => {
+let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client, region, objAttribs, catcher) => {
     return new Promise((resolve, reject) => {
 
         client.send(new GetMethodCommand(
@@ -154,7 +154,7 @@ let apigateway_GetMethod = (httpMethod, resourceId, restApiId, client, region) =
 };
 
 
-let apigateway_GetResources = (restApiId, client, region) => {
+let apigateway_GetResources = (restApiId, client, region, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         const pConfig = {
@@ -234,7 +234,7 @@ let apigateway_GetResources = (restApiId, client, region) => {
 };
 
 
-let apigateway_GetRestApis = (region, credentials) => {
+let apigateway_GetRestApis = (region, credentials, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
 
         const client = new APIGatewayClient(
@@ -300,7 +300,7 @@ let apigateway_GetRestApis = (region, credentials) => {
 
 };
 
-export let apigateway_Begin = (region, credentials, svcCallsAll) => {
+export let apigateway_Begin = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise((resolve) => {
 
         serviceCallManifest = svcCallsAll;

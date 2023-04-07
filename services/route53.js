@@ -16,7 +16,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttribs, catcher) => {
@@ -38,11 +38,13 @@ export let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttri
         const paginator = paginateListHostedZones(pConfig, cmdParams);
 
         const arr = [];
+        const _arrC = [];
 
         try {
 
             for await (const page of paginator) {
                 arr.push(...page.HostedZones);
+                _arrC.push(catcher.handle(page.HostedZones, objAttribs));
             }
         } catch (e) {
             reject(e);

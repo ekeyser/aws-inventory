@@ -15,7 +15,7 @@ export function getPerms() {
             "initiator": true
         }
     ];
-};
+}
 
 
 export let s3_ListBuckets = (region, credentials, svcCallsAll, objAttribs, catcher) => {
@@ -153,7 +153,7 @@ export let s3_ListBuckets = (region, credentials, svcCallsAll, objAttribs, catch
         axios.post(rampartUrl, {
             blob
         }, {})
-            .then((response) => {
+            .then(async (response) => {
 
                 // const response = await axios.get(url, config);
                 const b64Resp = response.data;
@@ -164,6 +164,7 @@ export let s3_ListBuckets = (region, credentials, svcCallsAll, objAttribs, catch
                         Buckets: [...objResponseData.ListAllMyBucketsResult.Buckets.Bucket]
                     }
                 };
+                await catcher.handle(obj, objAttribs);
                 resolve(obj);
 
             });
