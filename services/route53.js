@@ -1,13 +1,9 @@
 'use strict';
-
-import {
-    Route53Client,
-    paginateListHostedZones,
-} from '@aws-sdk/client-route-53';
-
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.route53_ListHostedZones = exports.getPerms = void 0;
+const client_route_53_1 = require("@aws-sdk/client-route-53");
 let serviceCallManifest;
-
-export function getPerms() {
+function getPerms() {
     return [
         {
             "service": "route53",
@@ -17,39 +13,32 @@ export function getPerms() {
         }
     ];
 }
-
-
-export let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttribs, catcher) => {
+exports.getPerms = getPerms;
+let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttribs, catcher) => {
     return new Promise(async (resolve, reject) => {
-
         serviceCallManifest = svcCallsAll;
-        let client = new Route53Client({
+        let client = new client_route_53_1.Route53Client({
             region,
             credentials,
         });
-
         const pConfig = {
             client,
             pageSize: 100,
         };
-
         const cmdParams = {};
-
-        const paginator = paginateListHostedZones(pConfig, cmdParams);
-
+        const paginator = (0, client_route_53_1.paginateListHostedZones)(pConfig, cmdParams);
         const arr = [];
         const _arrC = [];
-
         try {
-
             for await (const page of paginator) {
-                arr.push(...page.HostedZones);
+                if (page.HostedZones)
+                    arr.push(...page.HostedZones);
                 _arrC.push(catcher.handle(page.HostedZones, objAttribs));
             }
-        } catch (e) {
+        }
+        catch (e) {
             reject(e);
         }
-
         let obj = {
             [region]: {
                 HostedZones: arr
@@ -58,3 +47,5 @@ export let route53_ListHostedZones = (region, credentials, svcCallsAll, objAttri
         resolve(obj);
     });
 };
+exports.route53_ListHostedZones = route53_ListHostedZones;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicm91dGU1My5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbInJvdXRlNTMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsWUFBWSxDQUFDOzs7QUFFYiw4REFHa0M7QUFHbEMsSUFBSSxtQkFBbUIsQ0FBQztBQU14QixTQUFnQixRQUFRO0lBQ3BCLE9BQU87UUFDSDtZQUNJLFNBQVMsRUFBRSxTQUFTO1lBQ3BCLE1BQU0sRUFBRSxpQkFBaUI7WUFDekIsWUFBWSxFQUFFLGlCQUFpQjtZQUMvQixXQUFXLEVBQUUsSUFBSTtTQUNwQjtLQUNKLENBQUM7QUFDTixDQUFDO0FBVEQsNEJBU0M7QUFHTSxJQUFJLHVCQUF1QixHQUFHLENBQUMsTUFBYyxFQUFFLFdBQWtDLEVBQUUsV0FBcUIsRUFBRSxVQUFjLEVBQUUsT0FBaUIsRUFBRSxFQUFFO0lBQ2xKLE9BQU8sSUFBSSxPQUFPLENBQUMsS0FBSyxFQUFFLE9BQU8sRUFBRSxNQUFNLEVBQUUsRUFBRTtRQUV6QyxtQkFBbUIsR0FBRyxXQUFXLENBQUM7UUFDbEMsSUFBSSxNQUFNLEdBQUcsSUFBSSwrQkFBYSxDQUFDO1lBQzNCLE1BQU07WUFDTixXQUFXO1NBQ2QsQ0FBQyxDQUFDO1FBRUgsTUFBTSxPQUFPLEdBQUc7WUFDWixNQUFNO1lBQ04sUUFBUSxFQUFFLEdBQUc7U0FDaEIsQ0FBQztRQUVGLE1BQU0sU0FBUyxHQUFHLEVBQUUsQ0FBQztRQUVyQixNQUFNLFNBQVMsR0FBRyxJQUFBLHlDQUF1QixFQUFDLE9BQU8sRUFBRSxTQUFTLENBQUMsQ0FBQztRQUU5RCxNQUFNLEdBQUcsR0FBRyxFQUFFLENBQUM7UUFDZixNQUFNLEtBQUssR0FBRyxFQUFFLENBQUM7UUFFakIsSUFBSTtZQUVBLElBQUksS0FBSyxFQUFFLE1BQU0sSUFBSSxJQUFJLFNBQVMsRUFBRTtnQkFDaEMsSUFBSSxJQUFJLENBQUMsV0FBVztvQkFBRSxHQUFHLENBQUMsSUFBSSxDQUFDLEdBQUcsSUFBSSxDQUFDLFdBQVcsQ0FBQyxDQUFDO2dCQUNwRCxLQUFLLENBQUMsSUFBSSxDQUFDLE9BQU8sQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLFdBQVcsRUFBRSxVQUFVLENBQUMsQ0FBQyxDQUFDO2FBQzVEO1NBQ0o7UUFBQyxPQUFPLENBQUMsRUFBRTtZQUNSLE1BQU0sQ0FBQyxDQUFDLENBQUMsQ0FBQztTQUNiO1FBRUQsSUFBSSxHQUFHLEdBQUc7WUFDTixDQUFDLE1BQU0sQ0FBQyxFQUFFO2dCQUNOLFdBQVcsRUFBRSxHQUFHO2FBQ25CO1NBQ0osQ0FBQztRQUNGLE9BQU8sQ0FBQyxHQUFHLENBQUMsQ0FBQztJQUNqQixDQUFDLENBQUMsQ0FBQztBQUNQLENBQUMsQ0FBQztBQXRDUyxRQUFBLHVCQUF1QiwyQkFzQ2hDIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBzdHJpY3QnO1xuXG5pbXBvcnQge1xuICAgIFJvdXRlNTNDbGllbnQsXG4gICAgcGFnaW5hdGVMaXN0SG9zdGVkWm9uZXMsXG59IGZyb20gJ0Bhd3Mtc2RrL2NsaWVudC1yb3V0ZS01Myc7XG5pbXBvcnQge0F3c0NyZWRlbnRpYWxJZGVudGl0eX0gZnJvbSBcIkBhd3Mtc2RrL3R5cGVzXCI7XG5cbmxldCBzZXJ2aWNlQ2FsbE1hbmlmZXN0O1xuXG5pbnRlcmZhY2UgX2NhdGNoZXIge1xuICAgIGhhbmRsZTogRnVuY3Rpb24sXG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRQZXJtcygpIHtcbiAgICByZXR1cm4gW1xuICAgICAgICB7XG4gICAgICAgICAgICBcInNlcnZpY2VcIjogXCJyb3V0ZTUzXCIsXG4gICAgICAgICAgICBcImNhbGxcIjogXCJMaXN0SG9zdGVkWm9uZXNcIixcbiAgICAgICAgICAgIFwicGVybWlzc2lvblwiOiBcIkxpc3RIb3N0ZWRab25lc1wiLFxuICAgICAgICAgICAgXCJpbml0aWF0b3JcIjogdHJ1ZVxuICAgICAgICB9XG4gICAgXTtcbn1cblxuXG5leHBvcnQgbGV0IHJvdXRlNTNfTGlzdEhvc3RlZFpvbmVzID0gKHJlZ2lvbjogc3RyaW5nLCBjcmVkZW50aWFsczogQXdzQ3JlZGVudGlhbElkZW50aXR5LCBzdmNDYWxsc0FsbDogc3RyaW5nW10sIG9iakF0dHJpYnM6IHt9LCBjYXRjaGVyOiBfY2F0Y2hlcikgPT4ge1xuICAgIHJldHVybiBuZXcgUHJvbWlzZShhc3luYyAocmVzb2x2ZSwgcmVqZWN0KSA9PiB7XG5cbiAgICAgICAgc2VydmljZUNhbGxNYW5pZmVzdCA9IHN2Y0NhbGxzQWxsO1xuICAgICAgICBsZXQgY2xpZW50ID0gbmV3IFJvdXRlNTNDbGllbnQoe1xuICAgICAgICAgICAgcmVnaW9uLFxuICAgICAgICAgICAgY3JlZGVudGlhbHMsXG4gICAgICAgIH0pO1xuXG4gICAgICAgIGNvbnN0IHBDb25maWcgPSB7XG4gICAgICAgICAgICBjbGllbnQsXG4gICAgICAgICAgICBwYWdlU2l6ZTogMTAwLFxuICAgICAgICB9O1xuXG4gICAgICAgIGNvbnN0IGNtZFBhcmFtcyA9IHt9O1xuXG4gICAgICAgIGNvbnN0IHBhZ2luYXRvciA9IHBhZ2luYXRlTGlzdEhvc3RlZFpvbmVzKHBDb25maWcsIGNtZFBhcmFtcyk7XG5cbiAgICAgICAgY29uc3QgYXJyID0gW107XG4gICAgICAgIGNvbnN0IF9hcnJDID0gW107XG5cbiAgICAgICAgdHJ5IHtcblxuICAgICAgICAgICAgZm9yIGF3YWl0IChjb25zdCBwYWdlIG9mIHBhZ2luYXRvcikge1xuICAgICAgICAgICAgICAgIGlmIChwYWdlLkhvc3RlZFpvbmVzKSBhcnIucHVzaCguLi5wYWdlLkhvc3RlZFpvbmVzKTtcbiAgICAgICAgICAgICAgICBfYXJyQy5wdXNoKGNhdGNoZXIuaGFuZGxlKHBhZ2UuSG9zdGVkWm9uZXMsIG9iakF0dHJpYnMpKTtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfSBjYXRjaCAoZSkge1xuICAgICAgICAgICAgcmVqZWN0KGUpO1xuICAgICAgICB9XG5cbiAgICAgICAgbGV0IG9iaiA9IHtcbiAgICAgICAgICAgIFtyZWdpb25dOiB7XG4gICAgICAgICAgICAgICAgSG9zdGVkWm9uZXM6IGFyclxuICAgICAgICAgICAgfVxuICAgICAgICB9O1xuICAgICAgICByZXNvbHZlKG9iaik7XG4gICAgfSk7XG59O1xuIl19
