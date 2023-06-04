@@ -5,6 +5,7 @@
   "main": "index.js",
   "repository": "ekeyser/aws-inventory",
   "type": "module",
+  "types": "index.d.ts",
   "files": [
     "index.js",
     "services"
