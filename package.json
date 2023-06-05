@@ -1,15 +1,11 @@
 {
   "name": "aws-inventory",
-  "version": "0.5.2",
+  "version": "0.5.8",
   "description": "AWS Infrastructure Inventory",
   "main": "index.js",
   "repository": "ekeyser/aws-inventory",
   "type": "module",
-  "types": "index.d.ts",
-  "files": [
-    "index.js",
-    "services"
-  ],
+  "types": "./index.d.ts",
   "scripts": {
     "build": "tsc",
     "build-rollup": "rollup -c",

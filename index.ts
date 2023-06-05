@@ -33,7 +33,6 @@ export class AwsInventory {
     permissions: {}[]
     catcher
     cohort
-    config
     objGlobal
     MAX_WAIT: number
 
@@ -43,14 +42,12 @@ export class AwsInventory {
         permissions: string[],
         catcher: Function,
         cohort: string,
-        config: {},
     }) {
         this.credentials = config.credentials;
         this.calls = config.calls;
         this.permissions = [];
         this.catcher = config.catcher;
         this.cohort = config.cohort;
-        this.config = config;
     }
 
 
@@ -160,7 +157,7 @@ export class AwsInventory {
 
 
     getCalls = () => {
-        return this.config.calls;
+        return this.calls;
     };
 
 

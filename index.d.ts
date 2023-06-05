@@ -1,7 +1,25 @@
-export = AwsInventory;
+export declare class AwsInventory {
+    constructor(config: {
+        credentials: {
+            accessKeyId: string,
+            secretAccessKey: string,
+        },
+        calls: {
+            [region: string]: {
+                [svc_name: string]: string[],
+            },
+        },
+        permissions: string[],
+        catcher: Function,
+        cohort: string,
+        // receiver: Function,
+    })
 
-declare function AwsInventory(): {};
+    static getPermissions(): {
+        service: string,
+        permission: string,
+        call: string,
+    }[];
 
-declare namespace AwsInventory {
-    function yeah(): void;
+    inventory(): Promise<{}[]> ;
 }
